@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import ReactFlow, { Controls } from "reactflow";
+import ReactFlow, { Controls, useReactFlow } from "reactflow";
 import "reactflow/dist/style.css";
 
 // Sample JSON data
@@ -177,12 +177,23 @@ const generateGraph = (data) => {
   // Sort nodes by number of outgoing references
   const sortedData = data.sort((a, b) => b.num_out - a.num_out);
 
-  // Position nodes based on sorted order, with most outgoing references at the bottom
-  const nodes = sortedData.map((node, index) => ({
-    id: node.name,
-    data: { label: node.name },
-    position: { x: index * 250, y: 200 + index * 100 }, // Increase y value for lower placement
-  }));
+  // Create nodes and position them in a circle
+  const radiusStep = 150; // Distance between each "layer" of nodes
+  const totalNodes = sortedData.length;
+
+  const nodes = sortedData.map((node, index) => {
+    // Calculate angle for node positioning
+    const angle = (index / totalNodes) * 2 * Math.PI; // Divide circle into equal parts
+    const radius = radiusStep * Math.min(index, 2); // Control how spread out nodes are (adjust 2 for more spread)
+    const x = 300 + radius * Math.cos(angle); // x-position based on angle and radius
+    const y = 200 + radius * Math.sin(angle); // y-position based on angle and radius
+
+    return {
+      id: node.name,
+      data: { label: node.name },
+      position: { x, y },
+    };
+  });
 
   // Create edges based on out_references
   const edges = data.flatMap((node) =>
@@ -195,7 +206,10 @@ const generateGraph = (data) => {
   );
 
   return { nodes, edges };
-}; const App = () => {
+};
+
+
+const App = () => {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [selectedNode, setSelectedNode] = useState(null);
 
@@ -219,7 +233,8 @@ const generateGraph = (data) => {
           edges={graph.edges}
           onNodeClick={handleNodeClick} // Attach click handler
         >
-          <Controls />
+          {/* Custom controls*/}
+          <Controls position="top-left" />
         </ReactFlow>
       </div>
 
