@@ -1,0 +1,14 @@
+langchain
+langgraph
+langchain_community
+langchain_ollama
+langchain-anthropic
+langchain-openai
+langchain-chroma
+pypdf
+python-dotenv
+tiktoken
+pymupdf
+streamlit
+chromadb
+arxiv
