@@ -17,7 +17,8 @@ Current ideas:
     - easier to research \/ do papers.
     - chatbot using RAG to answer questions with well cited answers, can quote papers
 
-
+- Reach Goals:
+    - ‘identifies gaps in the market’ simply by looking at the sketch/map and coming up with areas which are neglected 
 
 
 
