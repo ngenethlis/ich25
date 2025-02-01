@@ -110,11 +110,12 @@ def add_node_api():
 
     result = add_node(data['name'], data.get('out_refs', []))
     return jsonify(result)
-def main():
 
-   p1 = PaperNode("p1", "fake", "a", out_refs={"p2","p3"})
-   p2 = PaperNode("p2", "fake", "a", out_refs = {"p3"})
-   p3 = PaperNode("p3", "fake", "a", out_refs = {"p4"})
+#def main():
+
+#   p1 = PaperNode("p1", "fake", "a", out_refs={"p2","p3"})
+ #  p2 = PaperNode("p2", "fake", "a", out_refs = {"p3"})
+  # p3 = PaperNode("p3", "fake", "a", out_refs = {"p4"})
    #pprint(PAPER_REFS)
    #pprint(f"{PAPER_IDENTIFIER=}")
    #in_ref_handler()
@@ -124,7 +125,7 @@ def main():
    #pprint(p3)
 
 if __name__ == '__main__':
-   main()
+   #main()
    app.run(debug=True)
 
 #main()
