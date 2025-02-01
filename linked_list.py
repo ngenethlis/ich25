@@ -1,3 +1,9 @@
+## TODO: MAKE THIS INTO AN API
+## get data, create nodes savani side
+## return nodes triggered by api call
+## figure out library for visualising + format to visualize
+
+
 import types
 from typing import DefaultDict
 from pprint import pprint
