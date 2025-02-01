@@ -1,8 +1,9 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactFlow, { Controls, useReactFlow } from "reactflow";
 import "reactflow/dist/style.css";
-
+import MermaidGraph from "./MermaidGraph"
+import mermaid from "mermaid";
 // Sample JSON data
 const jsonData = [
   {
@@ -208,8 +209,47 @@ const generateGraph = (data) => {
   return { nodes, edges };
 };
 
+// Function to generate Mermaid graph definition from JSON data
+const generateMermaidGraph = (data) => {
+  let mermaidDefinition = "graph TD;\n";
+
+  data.forEach((node) => {
+    node.out_references.forEach((ref) => {
+      mermaidDefinition += `    ${node.name} --> ${ref};\n`;
+    });
+  });
+
+  return mermaidDefinition;
+};
 
 const App = () => {
+  const [mermaidGraph, setMermaidGraph] = useState("");
+  const graphContainerRef = useRef(null);
+
+  useEffect(() => {
+    const graphDefinition = generateMermaidGraph(jsonData);
+    setMermaidGraph(graphDefinition); // Set the generated graph definition
+
+    if (graphContainerRef.current) {
+      mermaid.contentLoaded();
+    }
+  }, []);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
+      <h1 style={{ textAlign: "center" }}>Mermaid Diagram</h1>
+      <div style={{ flex: 1, overflow: "auto" }}>
+        <MermaidGraph graphDefinition={mermaidGraph} /> {/* Render the Mermaid graph */}
+      </div>
+    </div>
+  );
+};
+export default App;
+
+
+
+
+const App_circle = () => {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [selectedNode, setSelectedNode] = useState(null);
 
@@ -286,4 +326,4 @@ const App = () => {
   );
 };
 
-export default App;
+//export default App;
