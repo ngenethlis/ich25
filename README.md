@@ -2,16 +2,41 @@
 
 Current ideas:
 
+# Overleaf Extension + Research assistant
+- Store papers in vectorDB
+- Node is paper, links are references to other papers
+- LLM job:
+    - finds relevant literature from variety of sources
+    - Suggests:
+        i) points metioned in other papers than you haven't mentioned
+        ii) Misquotes/ misuse of papers?
+        iii) Reads your own paper + sources, what do those papers reference? what papers also reference that topic?
+
+- Goal:
+    - reference map / graph
+    - easier to research \/ do papers.
+    - chatbot using RAG to answer questions with well cited answers, can quote papers
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Anthropic: Use claude
 - Jury + RAG
 
 MW:
 - code path generator
-
-
-NoCode:
-- 
-
 
 
 Story linking and analysis
