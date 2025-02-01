@@ -21,10 +21,11 @@ Story linking and analysis
 - use react, display a timeline of events and then have that event blow up so that it shows left and right views using news cards -> click on the card to access the news story
 
 # How to Run
-Store an Anthropic API key in the ANTHROPIC_API_KEY environment variable.
+Store an Anthropic API key in the ANTHROPIC_API_KEY environment variable and an OpenAI API key in the OPENAI_API_KEY variable.
 This can be done either with the command line, or creating a .env file with the following line in it:
 ```
 ANTHROPIC_API_KEY=sk-proj-4PYN.......
+OPENAI_API_KEY=sk-proj-4PYN.......
 ```
 
 Install the requirements using
