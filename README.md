@@ -8,9 +8,9 @@ Current ideas:
 - LLM job:
     - finds relevant literature from variety of sources
     - Suggests:
-        i) points metioned in other papers than you haven't mentioned
-        ii) Misquotes/ misuse of papers?
-        iii) Reads your own paper + sources, what do those papers reference? what papers also reference that topic?
+        1. Points metioned in other papers than you haven't mentioned
+        2. Misquotes/ misuse of papers?
+        3. Reads your own paper + sources, what do those papers reference? what papers also reference that topic?
 
 - Goal:
     - reference map / graph
