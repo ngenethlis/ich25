@@ -1,5 +1,6 @@
 import types
 from typing import DefaultDict
+from pprint import pprint
 
 PAPER_IDENTIFIER = DefaultDict()
 # paper_name : paper_node
@@ -22,9 +23,9 @@ class PaperNode:
 
    def update_dict(self):
       for out in self.out_references:
-         PAPER_REFS[out].add(self)
+         PAPER_REFS[out].add(self.name)
          # outcoming ref : out : set{papers that reference out}
-      print(f"{PAPER_REFS=} after inserting {self.name}")
+      pprint(f"{PAPER_REFS=} after inserting {self.name}")
       global PAPER_IDENTIFIER
       PAPER_IDENTIFIER[self.name] = self     
 
@@ -36,12 +37,17 @@ class PaperNode:
       self.out_references.add(out_ref)
       self.num_out+=1
 
+   def __repr__(self) -> str:
+      return f"{self.name=}, {self.url=}, {self.num_in=}, {self.num_out=}"
+
 
 def in_ref_handler():
    """Call after all papers entered, calculates incoming references for every paper """
-   print(PAPER_REFS.values())
-   for (paper_name,in_refs_set) in PAPER_REFS.values():
-      print(f" {paper_name} , {in_refs_set}")
+   pprint(f"vals {PAPER_REFS}")
+   for (paper_name, in_refs_set) in PAPER_REFS.items():
+      pprint(f" {paper_name=} , {in_refs_set=}")
+      if paper_name not in PAPER_IDENTIFIER:
+         continue
       paper = PAPER_IDENTIFIER[paper_name]
       paper.add_in_references(in_refs_set)
    return 
@@ -49,11 +55,14 @@ def in_ref_handler():
 def main():
    p1 = PaperNode("p1", "fake", "a", out_refs={"p2","p3"})
    p2 = PaperNode("p2", "fake", "a", out_refs = {"p3"})
-   p2 = PaperNode("p3", "fake", "a", out_refs = {"p4"})
-   print(PAPER_REFS)
-   print(PAPER_IDENTIFIER)
+   p3 = PaperNode("p3", "fake", "a", out_refs = {"p4"})
+   pprint(PAPER_REFS)
+   pprint(f"{PAPER_IDENTIFIER=}")
    in_ref_handler()
-   print(PAPER_REFS)
+   pprint(PAPER_REFS)
+   pprint(p1)
+   pprint(p2)
+   pprint(p3)
 
 main()
 
