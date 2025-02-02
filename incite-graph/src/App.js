@@ -227,6 +227,8 @@ const generateBackgroundGradient = (nodes) => {
   });
 
   gradient = gradient.slice(0, -2) + ")"; // Remove trailing comma and close gradient
+
+  console.log("Final Gradient:", gradient); // Log the final gradient
   return gradient;
 };
 
@@ -242,6 +244,7 @@ const App = () => {
     // Calculate node influence and generate background gradient
     const nodesWithInfluence = calculateNodeInfluence(jsonData);
     const gradient = generateBackgroundGradient(nodesWithInfluence);
+    console.log("Generated Gradient:", gradient); // Log the gradient
     setBackgroundGradient(gradient);
   }, []);
 
@@ -258,7 +261,7 @@ const App = () => {
         style={{
           flex: 1,
           position: "relative",
-          background: backgroundGradient, // Apply dynamic gradient
+          background: backgroundGradient || "white", // Fallback to white if gradient is empty
         }}
       >
         <h1 style={{ textAlign: "center" }}>Interactive Graph</h1>
@@ -270,9 +273,7 @@ const App = () => {
           <Controls position="top-left" /> {/* Add controls */}
           <Background /> {/* Add a background */}
         </ReactFlow>
-      </div>
-
-      {/* Sidebar to display the selected node's data */}
+      </div>      {/* Sidebar to display the selected node's data */}
       {selectedNode && (
         <div
           style={{
@@ -304,7 +305,7 @@ const App = () => {
               padding: "10px",
               background: "#ff6347",
               border: "none",
-              color: "white",
+              color: "plum",
               cursor: "pointer",
               borderRadius: "5px",
             }}
