@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 from langchain.docstore.document import Document
 from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_community.embeddings import OpenAIEmbeddings
 
 
 class InCiteIRISDatabase:
@@ -33,9 +33,26 @@ class InCiteIRISDatabase:
         self.questions_table_name = "InCite.Questions1"
 
         # Set up the tables.
-        self.setup_tables()
+        # self.setup_tables()
 
     def setup_tables(self):
+        # --- Article References Table ---
+        articles_references_table_definition = f"""
+        (
+          article_id BIGINT,
+          referenced_article_id BIGINT,
+          PRIMARY KEY (article_id, referenced_article_id),
+          FOREIGN KEY (article_id) REFERENCES {self.articles_table_name}(id),
+          FOREIGN KEY (referenced_article_id) REFERENCES {self.articles_table_name}(id)
+        )
+        """
+        try:
+            self.cursor.execute(f"DROP TABLE {self.articles_references_table_name}")
+        except Exception as e:
+            print("Article references table did not exist or could not be dropped, continuing...")
+        self.cursor.execute(f"CREATE TABLE {self.articles_references_table_name} {articles_references_table_definition}")
+        print("Article references table created successfully.")
+
         # --- Article Table ---
         articles_table_definition = """
         (
@@ -62,6 +79,7 @@ class InCiteIRISDatabase:
             f"CREATE TABLE {self.articles_table_name} {articles_table_definition}"
         )
         print("Articles table created successfully.")
+
 
         # --- Article References Table ---
         articles_references_table_definition = f"""
@@ -181,11 +199,11 @@ class InCiteIRISDatabase:
         """
         # Compute the embedding for the query text.
         query_embedding = self.embed_text(query_text)
-        print("Query embedding:", query_embedding)
+        # print("Query embedding:", query_embedding)
 
         # Convert the query embedding into a comma-separated string literal.
         vector_literal = ",".join(str(x) for x in query_embedding)
-        print("Vector literal:", vector_literal)
+        # print("Vector literal:", vector_literal)
 
         # Build the SQL query.
         sql = f"""
@@ -245,7 +263,7 @@ class InCiteIRISDatabase:
         try:
             # Compute the embedding for the question.
             question_vector = self.embed_text(question)
-            print("Question embedding:", question_vector)
+            # print("Question embedding:", question_vector)
 
             # Convert the embedding into a comma-separated string.
             vector_literal = ",".join(str(x) for x in question_vector)
@@ -272,9 +290,9 @@ class InCiteIRISDatabase:
         by comparing the query embedding with the stored question_vector using IRIS's VECTOR_DOT_PRODUCT.
         """
         query_embedding = self.embed_text(query_text)
-        print("Query embedding:", query_embedding)
+        # print("Query embedding:", query_embedding)
         vector_literal = ",".join(str(x) for x in query_embedding)
-        print("Vector literal:", vector_literal)
+        # print("Vector literal:", vector_literal)
         sql = f"""
         SELECT TOP {top_k} 
                id, question, priority,
@@ -301,6 +319,10 @@ class InCiteIRISDatabase:
         Inserts an article into the Articles table using a JSON/dict object, then returns the
         article in the specified JSON format.
         """
+        # Check if the db already has an article with the same name.
+        self.cursor.execute(f"SELECT * FROM {self.articles_table_name} WHERE name = ?", (article_json.get("name"),))
+        if self.cursor.fetchone():
+            return None
         # Generate a new id by selecting the current maximum and adding 1.
         self.cursor.execute(f"SELECT MAX(id) FROM {self.articles_table_name}")
         max_id_row = self.cursor.fetchone()
