@@ -1,39 +1,31 @@
-# ich25
+# InCite
 
-Current ideas:
+## Inspiration
+- We saw its hard to find a thesis or research topic
+- Founders really struggle to come up with new ideas based on gaps in the market
+- It's difficult to visulise and understand how papers link together and the chain of events that lead to this paper in terms of its citations.
+- There is no 
+- With the recent developments in text encoders and LLMs we can leverage these new technologise to understand and interprate papers.
 
-Anthropic: Use claude
-- Jury + RAG
+## What it does
+- COI analysis
+- Critical Evaluation of reasearch methods and citations
+- Creates a CiteMap linking papers that reference one another together, making it easier to visulise and follow the chain of thought.
 
-MW:
-- code path generator
+## How we built it
+- 
+
+## Challenges we ran into
 
 
-NoCode:
--
+## Accomplishments that we're proud of
 
 
+## What we learned
 
-Story linking and analysis
-- Vector DB - intersystems
-- find out which article is about the same news story (scrape and use rss feeds, link news stories, and how we do it)
-- compile a list of rss fields
-- use react, display a timeline of events and then have that event blow up so that it shows left and right views using news cards -> click on the card to access the news story
+## What's Next
 
-# How to Run
-Store an Anthropic API key in the ANTHROPIC_API_KEY environment variable and an OpenAI API key in the OPENAI_API_KEY variable.
-This can be done either with the command line, or creating a .env file with the following line in it:
-```
-ANTHROPIC_API_KEY=sk-proj-4PYN.......
-OPENAI_API_KEY=sk-proj-4PYN.......
-```
-
-Install the requirements using
-```bash
-pip install -r requirements.txt
-```
-
-Run the program with:
-```bash
-streamlit run main.py
-```
+## Built With
+- React
+- InterSystems IRIS Vector DB
+- Anthropic Claude
