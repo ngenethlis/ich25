@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './App.css';
 
 function App() {
     const [activeTab, setActiveTab] = useState('home');
     const [inputText, setInputText] = useState('');
     const [displayType, setDisplayType] = useState('cards');
-    const [cards, setCards] = useState(() => {
-        const savedCards = localStorage.getItem('cards');
-        return savedCards ? JSON.parse(savedCards) : [];
-    });
+    const [cards, setCards] = useState([]);
     const [error, setError] = useState('');
     const [selectedCard, setSelectedCard] = useState(null);
 
@@ -19,10 +16,6 @@ function App() {
             )
         );
     };
-
-    useEffect(() => {
-        localStorage.setItem('cards', JSON.stringify(cards));
-    }, [cards]);
 
     const isValidCardData = (data) => {
         return (
@@ -45,15 +38,6 @@ function App() {
         try {
             const inputData = JSON.parse(inputText);
 
-            const existingCards = new Map(cards.map(card => [card.name, card]));
-
-            const processPaper = (paper) => {
-                return existingCards.get(paper.name) || {
-                    ...paper,
-                    isFavourite: false
-                };
-            };
-
             if (inputData.papers && Array.isArray(inputData.papers)) {
                 const invalidPapers = inputData.papers.filter(
                     (paper) => !isValidCardData(paper)
@@ -61,24 +45,24 @@ function App() {
                 if (invalidPapers.length > 0) {
                     throw new Error('Some papers are missing required fields');
                 }
-                const newCards = inputData.papers.map(processPaper);
-                setCards(prev => [
-                    ...prev,
-                    ...newCards.filter(newCard =>
-                        !prev.some(existing => existing.name === newCard.name)
-                    )
+                setCards([
+                    ...cards,
+                    ...inputData.papers.map((paper) => ({
+                        ...paper,
+                        isFavorite: false,
+                    })),
                 ]);
             } else {
                 if (!isValidCardData(inputData)) {
                     throw new Error('Invalid JSON structure. Missing required fields.');
                 }
-                const newCard = processPaper(inputData);
-                if (!cards.some(existing => existing.name === newCard.name)) {
-                setCards(prev => [
-                    ...prev,
-                    newCard
+                setCards([
+                    ...cards,
+                    {
+                        ...inputData,
+                        isFavorite: false,
+                    },
                 ]);
-            }
             }
 
             setInputText('');
