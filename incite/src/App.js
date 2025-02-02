@@ -49,6 +49,11 @@ function App() {
     };
 
     const generateGraph = (data) => {
+        const normalizedData = data.map((node) => ({
+            ...node,
+            name: node.name.toLowerCase(),
+            out_references: node.out_references.map((ref) => ref.toLowerCase()),
+        }));
         const sortedData = data.sort((a, b) => b.num_out - a.num_out);
         const totalNodes = sortedData.length;
         const radiusStep = 100 + 5 * totalNodes;
@@ -97,17 +102,17 @@ function App() {
 
     const generateBackgroundGradient = (nodes) => {
         let gradient = "radial-gradient(circle, ";
-            nodes.forEach((node) => {
-                if (node.position && node.position.x !== undefined && node.position.y !== undefined) {
-                    const { x, y } = node.position;
-                    const darkness = 100 - Math.floor(node.influence * 50);
-                    gradient += `rgba(0, 0, 0, ${node.influence * 0.3}) ${x}px ${y}px, `;
-                } else {
-                    console.error("Node missing position:", node);
-                }
-            });
+        nodes.forEach((node) => {
+            if (node.position && node.position.x !== undefined && node.position.y !== undefined) {
+                const { x, y } = node.position;
+                const darkness = 100 - Math.floor(node.influence * 50);
+                gradient += `rgba(0, 0, 0, ${node.influence * 0.3}) ${x}px ${y}px, `;
+            } else {
+                console.error("Node missing position:", node);
+            }
+        });
 
-            gradient = gradient.slice(0, -2) + ")";
+        gradient = gradient.slice(0, -2) + ")";
         console.log("Final Gradient:", gradient);
         return gradient;
     };
@@ -157,8 +162,8 @@ function App() {
             setBackgroundGradient(gradient);
 
             //  if (!isValidCardData(graphData)) {
-                //          throw new Error('Invalid JSON structure. Missing required fields.');
-                //      }
+            //          throw new Error('Invalid JSON structure. Missing required fields.');
+            //      }
             console.debug(graphDatas);
 
             console.debug(graphDatas);
@@ -190,28 +195,28 @@ function App() {
         if (!node) return null;
         return (
             <div className="node-detail-overlay" onClick={onClose}>
-            <div className="node-detail-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-button" onClick={onClose}>x</button>
-            <h2>{node.name}</h2>
-            <div className="detail-section">
-            <label>Authors:</label>
-            <p>{node.authors}</p>
-            </div>
-            <div className="detail-section">
-            <label>Publication Date:</label>
-            <p>{node.publication_date}</p>
-            </div>
-            <div className="detail-section">
-            <label>Summary:</label>
-            <p>{node.summary}</p>
-            </div>
-            <div className="detail-section">
-            <label>URL:</label>
-            <a href={node.url} target="_blank" rel="noopener noreferrer">
-            {node.url}
-            </a>
-            </div>
-            </div>
+                <div className="node-detail-content" onClick={(e) => e.stopPropagation()}>
+                    <button className="close-button" onClick={onClose}>x</button>
+                    <h2>{node.name}</h2>
+                    <div className="detail-section">
+                        <label>Authors:</label>
+                        <p>{node.authors}</p>
+                    </div>
+                    <div className="detail-section">
+                        <label>Publication Date:</label>
+                        <p>{node.publication_date}</p>
+                    </div>
+                    <div className="detail-section">
+                        <label>Summary:</label>
+                        <p>{node.summary}</p>
+                    </div>
+                    <div className="detail-section">
+                        <label>URL:</label>
+                        <a href={node.url} target="_blank" rel="noopener noreferrer">
+                            {node.url}
+                        </a>
+                    </div>
+                </div>
             </div>
         );
     };
@@ -265,43 +270,46 @@ function App() {
         const referencedNode = graphDatas.find((item) => item.name === referenceName);
         if (referencedNode) {
             setSelectedNode(referencedNode);
+        } else {
+            const searchUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(referenceName)}`;
+            window.open(searchUrl, "_blank");
         }
     };
     const CardDetail = ({ card, onClose }) => {
         return (
             <div className="card-detail-overlay" onClick={onClose}>
-            <div className="card-detail-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-button" onClick={onClose}>
-            ×
-            </button>
-            <h2>{card.name}</h2>
-            <div className="detail-section">
-            <label>Authors:</label>
-            <p>{card.authors}</p>
-            </div>
-            <div className="detail-section">
-            <label>Publication Date:</label>
-            <p>{card.publication_date}</p>
-            </div>
-            <div className="detail-section">
-            <label>Summary:</label>
-            <p>{card.summary}</p>
-            </div>
-            <div className="detail-section">
-            <label>URL:</label>
-            <a href={card.url} target="_blank" rel="noopener noreferrer">
-            {card.url}
-            </a>
-            </div>
-            <div className="detail-section">
-            <label>Methodological Issues:</label>
-            <p>{card.method_issues}</p>
-            </div>
-            <div className="detail-section">
-            <label>Outgoing References ({card.num_out}):</label>
-            <p>{card.out_references.join(', ') || 'None'}</p>
-            </div>
-            </div>
+                <div className="card-detail-content" onClick={(e) => e.stopPropagation()}>
+                    <button className="close-button" onClick={onClose}>
+                        ×
+                    </button>
+                    <h2>{card.name}</h2>
+                    <div className="detail-section">
+                        <label>Authors:</label>
+                        <p>{card.authors}</p>
+                    </div>
+                    <div className="detail-section">
+                        <label>Publication Date:</label>
+                        <p>{card.publication_date}</p>
+                    </div>
+                    <div className="detail-section">
+                        <label>Summary:</label>
+                        <p>{card.summary}</p>
+                    </div>
+                    <div className="detail-section">
+                        <label>URL:</label>
+                        <a href={card.url} target="_blank" rel="noopener noreferrer">
+                            {card.url}
+                        </a>
+                    </div>
+                    <div className="detail-section">
+                        <label>Methodological Issues:</label>
+                        <p>{card.method_issues}</p>
+                    </div>
+                    <div className="detail-section">
+                        <label>Outgoing References ({card.num_out}):</label>
+                        <p>{card.out_references.join(', ') || 'None'}</p>
+                    </div>
+                </div>
             </div>
         );
     };
@@ -310,239 +318,337 @@ function App() {
 
     return (
         <div className="container">
-        <div className="header">
-        <h1 className="title">InCite</h1>
-        <div className="nav-bar">
-        {['home', 'gaps', 'collections'].map((tab) => (
-            <button
-            key={tab}
-            className={`nav-button ${activeTab === tab ? 'active-tab' : ''}`}
-            onClick={() => setActiveTab(tab)}
-            >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            {tab === 'collections' && ` (${favoritesCount})`}
-            </button>
-        ))}
-        </div>
-        </div>
-
-        {activeTab === 'collections' ? (
-            // Collections View
-            <div className="card-container">
-            {[0, 1].map((colIndex) => (
-                <div key={colIndex} className="column">
-                {cards
-                    .filter(card => card.isFavorite)
-                    .filter((_, index) => index % 2 === colIndex)
-                    .map((card, index) => (
-                        <div
-                        key={index}
-                        className="card"
-                        onClick={() => setSelectedCard(card)}
-                        >
-                        <div className="card-header">
-                        <h3 className="card-title">{card.name}</h3>
+            <div className="header">
+                <h1 className="title">InCite</h1>
+                <div className="nav-bar">
+                    {['home', 'gaps', 'collections'].map((tab) => (
                         <button
-                        className={`favorite-button ${card.isFavorite ? 'favorited' : ''}`}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            toggleFavorite(card.name);
-                        }}
+                            key={tab}
+                            className={`nav-button ${activeTab === tab ? 'active-tab' : ''}`}
+                            onClick={() => setActiveTab(tab)}
                         >
-                        {card.isFavorite ? '⭐' : '☆'}
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                            {tab === 'collections' && ` (${favoritesCount})`}
                         </button>
-                        </div>
-                        <div className="card-authors">{card.authors}</div>
-                        {/*<div className="card-keywords">{card.keywords.join(', ')}</div>*/}
-                        <div className="card-meta">
-                        <span>📅 {card.publication_date}</span>
-                        <span>🔗 {card.num_out} references</span>
-                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {activeTab === 'collections' ? (
+                // Collections View
+                <div className="card-container">
+                    {[0, 1].map((colIndex) => (
+                        <div key={colIndex} className="column">
+                            {cards
+                                .filter(card => card.isFavorite)
+                                .filter((_, index) => index % 2 === colIndex)
+                                .map((card, index) => (
+                                    <div
+                                        key={index}
+                                        className="card"
+                                        onClick={() => setSelectedCard(card)}
+                                    >
+                                        <div className="card-header">
+                                            <h3 className="card-title">{card.name}</h3>
+                                            <button
+                                                className={`favorite-button ${card.isFavorite ? 'favorited' : ''}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleFavorite(card.name);
+                                                }}
+                                            >
+                                                {card.isFavorite ? '⭐' : '☆'}
+                                            </button>
+                                        </div>
+                                        <div className="card-authors">{card.authors}</div>
+                                        {/*<div className="card-keywords">{card.keywords.join(', ')}</div>*/}
+                                        <div className="card-meta">
+                                            <span>📅 {card.publication_date}</span>
+                                            <span>🔗 {card.num_out} references</span>
+                                        </div>
+                                    </div>
+                                ))}
                         </div>
                     ))}
                 </div>
-            ))}
-            </div>
-        ) : (
-            // Regular View
-            <>
-            {/* Prompt Input */}
-            <form onSubmit={handleSubmit} className="input-container">
-            <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Enter prompt..."
-            className="input-field"
-            />
-            <button type="submit" className="submit-button">
-            Submit
-            </button>
-            </form>
-            {error && <div className="error-message">{error}</div>}
+            ) : (
+                // Regular View
+                <>
+                    {/* Prompt Input */}
+                    <form onSubmit={handleSubmit} className="input-container">
+                        <input
+                            type="text"
+                            value={inputText}
+                            onChange={(e) => setInputText(e.target.value)}
+                            placeholder="Enter prompt..."
+                            className="input-field"
+                        />
+                        <button type="submit" className="submit-button">
+                            Submit
+                        </button>
+                    </form>
+                    {error && <div className="error-message">{error}</div>}
 
-            {/* Display Type Selector */}
-            <div className="display-selector">
-            <button
-            className={`display-button ${displayType === 'cards' ? 'active-display' : ''}`}
-            onClick={() => setDisplayType('cards')}
-            >
-            Cards
-            </button>
-            <button
-            className={`display-button ${displayType === 'graph' ? 'active-display' : ''}`}
-            onClick={() => setDisplayType('graph')}
-            >
-            Graph
-            </button>
-            </div>
-
-            {/* Content Area */}
-            {displayType === 'cards' ? (
-                <div className="card-container">
-                {[0, 1].map((colIndex) => (
-                    <div key={colIndex} className="column">
-                    {cards
-                        .filter((_, index) => index % 2 === colIndex)
-                        .map((card, index) => (
-                            <div
-                            key={index}
-                            className="card"
-                            onClick={() => setSelectedCard(card)}
-                            >
-                            <div className="card-header">
-                            <h3 className="card-title">{card.name}</h3>
-                            <button
-                            className={`favorite-button ${card.isFavorite ? 'favorited' : ''}`}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                toggleFavorite(card.name);
-                            }}
-                            >
-                            {card.isFavorite ? '⭐' : '☆'}
-                            </button>
-                            </div>
-                            <div className="card-authors">{card.authors}</div>
-                            {/* <div className="card-content">{card.content.join(', ')}</div>*/}
-                            <div className="card-meta">
-                            <span>📅 {card.publication_date}</span>
-                            <span>🔗 {card.num_out} references</span>
-                            </div>
-                            </div>
-                        ))}
+                    {/* Display Type Selector */}
+                    <div className="display-selector">
+                        <button
+                            className={`display-button ${displayType === 'cards' ? 'active-display' : ''}`}
+                            onClick={() => setDisplayType('cards')}
+                        >
+                            Cards
+                        </button>
+                        <button
+                            className={`display-button ${displayType === 'graph' ? 'active-display' : ''}`}
+                            onClick={() => setDisplayType('graph')}
+                        >
+                            Graph
+                        </button>
                     </div>
-                ))}
-                </div>
-            ) : (
-                <div className="graph-container" style={{ display: "flex", height: "100vh", flexDirection: "row" }}>
-                {graph.nodes.length > 0 ? (
-                <ReactFlow nodes={graph.nodes} edges={graph.edges} onNodeClick={handleNodeClick}>
-                <Controls position='top-left' />
-                <Background/>
-                </ReactFlow>
-                ) : (
-                    <p>No graph data available</p>
-                )}
-                </div>
+
+                    {/* Content Area */}
+                    {displayType === 'cards' ? (
+                        <div className="card-container">
+                            {[0, 1].map((colIndex) => (
+                                <div key={colIndex} className="column">
+                                    {cards
+                                        .filter((_, index) => index % 2 === colIndex)
+                                        .map((card, index) => (
+                                            <div
+                                                key={index}
+                                                className="card"
+                                                onClick={() => setSelectedCard(card)}
+                                            >
+                                                <div className="card-header">
+                                                    <h3 className="card-title">{card.name}</h3>
+                                                    <button
+                                                        className={`favorite-button ${card.isFavorite ? 'favorited' : ''}`}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            toggleFavorite(card.name);
+                                                        }}
+                                                    >
+                                                        {card.isFavorite ? '⭐' : '☆'}
+                                                    </button>
+                                                </div>
+                                                <div className="card-authors">{card.authors}</div>
+                                                {/* <div className="card-content">{card.content.join(', ')}</div>*/}
+                                                <div className="card-meta">
+                                                    <span>📅 {card.publication_date}</span>
+                                                    <span>🔗 {card.num_out} references</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="graph-container" style={{ display: "flex", height: "100vh", flexDirection: "row" }}>
+                            {graph.nodes.length > 0 ? (
+                                <ReactFlow nodes={graph.nodes} edges={graph.edges} onNodeClick={handleNodeClick}>
+                                    <Controls position='top-left' />
+                                    <Background />
+                                </ReactFlow>
+                            ) : (
+                                <p>No graph data available</p>
+                            )}
+                        </div>
+                    )}
+                </>
             )}
-            </>
-        )}
 
-        {/* Card Detail Overlay */}
-        {selectedCard && (
-            <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
-        )}
+            {/* Card Detail Overlay */}
+            {selectedCard && (
+                <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
+            )}
 
-        {selectedNode && (
-            <div
-            style={{
-                width: "30%",
-                    backgroundColor: "var(--card-bg)",
-                    padding: "20px",
-                    position: "absolute",
-                    right: 0,
-                    top: 0,
-                    height: "100%",
-                    overflowY: "auto",
-                    boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
-            }}
-            >
-            <div>
-            <h3>Name: {selectedNode.name}</h3>
-            <p><strong>Authors:</strong> {selectedNode.authors}</p>
-            <p><strong>Publication Date:</strong> {selectedNode.publication_date}</p>
-            <p><strong>URL:</strong> <a href={selectedNode.url} target="_blank" rel="noopener noreferrer">{selectedNode.url}</a></p>
-
-
-
-            {/* Out References */}
-            <p>
-            <strong>References:</strong>
-            {selectedNode.num_out > 0 ? (
-                selectedNode.out_references.map((ref) => (
-                    <button
-                    key={ref}
-                    onClick={() => handleReferenceClick(ref)}
+            {selectedNode && (
+                <div
                     style={{
-                        margin: "2px",
-                            padding: "4px 8px",
-                            background: "#007bff",
-                            border: "none",
-                            color: "white",
-                            cursor: "pointer",
-                            borderRadius: "4px",
+                        width: "30%",
+                        backgroundColor: "var(--card-bg)",
+                        padding: "20px",
+                        position: "absolute",
+                        right: 0,
+                        top: 0,
+                        height: "100%",
+                        overflowY: "auto",
+                        boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
                     }}
-                    >
-                    {ref}
-                    </button>
-                ))
-            ) : (
-                " None"
-            )}
-            </p>
+                >
+                    <div>
+                        <h3>Name: {selectedNode.name}</h3>
+                        <p><strong>Authors:</strong> {selectedNode.authors}</p>
+                        <p><strong>Publication Date:</strong> {selectedNode.publication_date}</p>
+                        <p><strong>URL:</strong> <a href={selectedNode.url} target="_blank" rel="noopener noreferrer">{selectedNode.url}</a></p>
 
-            {/* In References */}
-            <p>
-            <strong>Referenced by:</strong>
-            {selectedNode.num_in > 0 ? (
-                selectedNode.in_references.map((ref) => (
+
+
+                        {/* Out References */}
+                        <p>
+                            <strong>References:</strong>
+                            {selectedNode.num_out > 0 ? (
+                                selectedNode.out_references.map((ref) => (
+                                    <button
+                                        key={ref}
+                                        onClick={() => handleReferenceClick(ref)}
+                                        style={{
+                                            margin: "2px",
+                                            padding: "4px 8px",
+                                            background: "#007bff",
+                                            border: "none",
+                                            color: "white",
+                                            cursor: "pointer",
+                                            borderRadius: "4px",
+                                        }}
+                                    >
+                                        {ref}
+                                    </button>
+                                ))
+                            ) : (
+                                " None"
+                            )}
+                        </p>
+
+                        {/* In References */}
+                        <p>
+                            <strong>Referenced by:</strong>
+                            {selectedNode.num_in > 0 ? (
+                                selectedNode.in_references.map((ref) => (
+                                    <button
+                                        key={ref}
+                                        onClick={() => handleReferenceClick(ref)}
+                                        style={{
+                                            margin: "2px",
+                                            padding: "4px 8px",
+                                            background: "#28a745",
+                                            border: "none",
+                                            color: "white",
+                                            cursor: "pointer",
+                                            borderRadius: "4px",
+                                        }}
+                                    >
+                                        {ref}
+                                    </button>
+                                ))
+                            ) : (
+                                " None"
+                            )}
+                        </p>
+                    </div>
                     <button
-                    key={ref}
-                    onClick={() => handleReferenceClick(ref)}
-                    style={{
-                        margin: "2px",
-                            padding: "4px 8px",
-                            background: "#28a745",
+                        onClick={() => setSelectedNode(null)}
+                        style={{
+                            marginTop: "20px",
+                            padding: "10px",
+                            background: "yellow",
                             border: "none",
-                            color: "white",
+                            color: "blue",
                             cursor: "pointer",
-                            borderRadius: "4px",
-                    }}
+                            borderRadius: "5px",
+                        }}
                     >
-                    {ref}
+                        Close
                     </button>
-                ))
-            ) : (
-                " None"
+                </div>
             )}
-            </p>
-            </div>
-            <button
-            onClick={() => setSelectedNode(null)}
-            style={{
-                marginTop: "20px",
-                    padding: "10px",
-                    background: "yellow",
-                    border: "none",
-                    color: "blue",
-                    cursor: "pointer",
-                    borderRadius: "5px",
-            }}
-            >
-            Close
-            </button>
-            </div>
+        
         )}
+
+            {/* Card Detail Overlay */}
+            {selectedCard && (
+                <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
+            )}
+
+            {selectedNode && (
+                <div
+                    style={{
+                        width: "30%",
+                        backgroundColor: "var(--card-bg)",
+                        padding: "20px",
+                        position: "absolute",
+                        right: 0,
+                        top: 0,
+                        height: "100%",
+                        overflowY: "auto",
+                        boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
+                    }}
+                >
+                    <div>
+                        <h3>Name: {selectedNode.name}</h3>
+                        <p><strong>Authors:</strong> {selectedNode.authors}</p>
+                        <p><strong>Publication Date:</strong> {selectedNode.publication_date}</p>
+                        <p><strong>URL:</strong> <a href={selectedNode.url} target="_blank" rel="noopener noreferrer">{selectedNode.url}</a></p>
+
+
+
+                        {/* Out References */}
+                        <p>
+                            <strong>References:</strong>
+                            {selectedNode.num_out > 0 ? (
+                                selectedNode.out_references.map((ref) => (
+                                    <button
+                                        key={ref}
+                                        onClick={() => handleReferenceClick(ref)}
+                                        style={{
+                                            margin: "2px",
+                                            padding: "4px 8px",
+                                            background: "#007bff",
+                                            border: "none",
+                                            color: "white",
+                                            cursor: "pointer",
+                                            borderRadius: "4px",
+                                        }}
+                                    >
+                                        {ref}
+                                    </button>
+                                ))
+                            ) : (
+                                " None"
+                            )}
+                        </p>
+
+                        {/* In References */}
+                        <p>
+                            <strong>Referenced by:</strong>
+                            {selectedNode.num_in > 0 ? (
+                                selectedNode.in_references.map((ref) => (
+                                    <button
+                                        key={ref}
+                                        onClick={() => handleReferenceClick(ref)}
+                                        style={{
+                                            margin: "2px",
+                                            padding: "4px 8px",
+                                            background: "#28a745",
+                                            border: "none",
+                                            color: "white",
+                                            cursor: "pointer",
+                                            borderRadius: "4px",
+                                        }}
+                                    >
+                                        {ref}
+                                    </button>
+                                ))
+                            ) : (
+                                " None"
+                            )}
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setSelectedNode(null)}
+                        style={{
+                            marginTop: "20px",
+                            padding: "10px",
+                            background: "yellow",
+                            border: "none",
+                            color: "blue",
+                            cursor: "pointer",
+                            borderRadius: "5px",
+                        }}
+                    >
+                        Close
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
