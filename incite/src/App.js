@@ -32,16 +32,16 @@ function App() {
                 if (!inReferencesMap.has(ref)) {
                     inReferencesMap.set(ref, []);
                 }
-                inReferencesMap.get(ref).push(node.name);
+                inReferencesMap.get(ref).push(node.name.toLowerCase());
             });
         });
 
         const transformedData = data.map((node) => ({
-            name: node.name,
+            name: node.name || "None",
             url: node.url,
             authors: node.authors,
             publication_date: node.publication_date,
-            out_references: node.out_references,
+            out_references: node.out_references || [],
             num_out: node.num_out,
             in_references: inReferencesMap.get(node.name) || [],
             num_in: inReferencesMap.get(node.name)?.length || 0,
@@ -520,7 +520,7 @@ function App() {
                             {/* In References */}
                             <p>
                                 <strong>Referenced by:</strong>
-                                {selectedNode.num_in > 0 ? (
+                                {selectedNode?.num_in > 0 && Array.isArray(selectedNode?.in_references) && selectedNode.in_references.length > 0 ? (
                                     selectedNode.in_references.map((ref) => (
                                         <button
                                             key={ref}
@@ -539,7 +539,7 @@ function App() {
                                         </button>
                                     ))
                                 ) : (
-                                    " None"
+                                    <span>No references available</span>
                                 )}
                             </p>
                         </div>
@@ -616,7 +616,7 @@ function App() {
                             {/* In References */}
                             <p>
                                 <strong>Referenced by:</strong>
-                                {selectedNode.num_in > 0 ? (
+                                {selectedNode?.num_in > 0 && Array.isArray(selectedNode?.in_references) && selectedNode.in_references.length > 0 ? (
                                     selectedNode.in_references.map((ref) => (
                                         <button
                                             key={ref}
@@ -635,9 +635,8 @@ function App() {
                                         </button>
                                     ))
                                 ) : (
-                                    " None"
-                                )}
-                            </p>
+                                    <span>No references available</span>
+                                )}                           </p>
                         </div>
                         <button
                             onClick={() => setSelectedNode(null)}
