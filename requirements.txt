@@ -2,15 +2,15 @@ langchain
 langgraph
 langchain_community
 langchain_ollama
-langchain-anthropic
-langchain-openai
-langchain-chroma
+langchain - anthropic
+langchain - openai
+langchain - chroma
 pypdf
-python-dotenv
+python - dotenv
 tiktoken
 pymupdf
 streamlit
 chromadb
 arxiv
 flask
-flask-cors
+flask - cors

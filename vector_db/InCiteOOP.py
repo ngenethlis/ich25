@@ -58,7 +58,9 @@ class InCiteIRISDatabase:
         except Exception as e:
             print("Articles table did not exist or could not be dropped, continuing...")
         # Create the Articles table.
-        self.cursor.execute(f"CREATE TABLE {self.articles_table_name} {articles_table_definition}")
+        self.cursor.execute(
+            f"CREATE TABLE {self.articles_table_name} {articles_table_definition}"
+        )
         print("Articles table created successfully.")
 
         # --- Article References Table ---
@@ -74,8 +76,12 @@ class InCiteIRISDatabase:
         try:
             self.cursor.execute(f"DROP TABLE {self.articles_references_table_name}")
         except Exception as e:
-            print("Article references table did not exist or could not be dropped, continuing...")
-        self.cursor.execute(f"CREATE TABLE {self.articles_references_table_name} {articles_references_table_definition}")
+            print(
+                "Article references table did not exist or could not be dropped, continuing..."
+            )
+        self.cursor.execute(
+            f"CREATE TABLE {self.articles_references_table_name} {articles_references_table_definition}"
+        )
         print("Article references table created successfully.")
 
         # --- Questions Table ---
@@ -90,8 +96,12 @@ class InCiteIRISDatabase:
         try:
             self.cursor.execute(f"DROP TABLE {self.questions_table_name}")
         except Exception as e:
-            print("Questions table did not exist or could not be dropped, continuing...")
-        self.cursor.execute(f"CREATE TABLE {self.questions_table_name} {questions_table_definition}")
+            print(
+                "Questions table did not exist or could not be dropped, continuing..."
+            )
+        self.cursor.execute(
+            f"CREATE TABLE {self.questions_table_name} {questions_table_definition}"
+        )
         print("Questions table created successfully.")
 
     def embed_text(self, text):
@@ -103,10 +113,24 @@ class InCiteIRISDatabase:
         splitter = CharacterTextSplitter(chunk_size=4096)
         chunks = splitter.split_documents([doc])
         embeddings = OpenAIEmbeddings()
-        embedded_chunks = embeddings.embed_documents([chunk.page_content for chunk in chunks])
+        embedded_chunks = embeddings.embed_documents(
+            [chunk.page_content for chunk in chunks]
+        )
         return embedded_chunks[0]
 
-    def insert_article(self, id, name, url, authors, keywords, publication_date, content, summary, method_issues, coi):
+    def insert_article(
+        self,
+        id,
+        name,
+        url,
+        authors,
+        keywords,
+        publication_date,
+        content,
+        summary,
+        method_issues,
+        coi,
+    ):
         """
         Inserts an article into the Articles table.
         The content is embedded using LangChain and stored in the content_vector column.
@@ -125,7 +149,22 @@ class InCiteIRISDatabase:
               (id, name, url, authors, keywords, publication_date, content, content_vector, summary, method_issues, coi)
             VALUES (?, ?, ?, ?, ?, ?, ?, to_vector(?, double), ?, ?, ?)
             """
-            self.cursor.execute(sql, (id, name, url, authors, keywords, publication_date, content, vector_literal, summary, method_issues, coi))
+            self.cursor.execute(
+                sql,
+                (
+                    id,
+                    name,
+                    url,
+                    authors,
+                    keywords,
+                    publication_date,
+                    content,
+                    vector_literal,
+                    summary,
+                    method_issues,
+                    coi,
+                ),
+            )
             self.conn.commit()
             print(f"Article '{name}' inserted successfully.")
         except dbapi.IntegrityError as e:
@@ -166,13 +205,18 @@ class InCiteIRISDatabase:
         Looks up an article by ID and retrieves its details along with referenced articles.
         """
         # Retrieve the article details.
-        self.cursor.execute(f"SELECT * FROM {self.articles_table_name} WHERE id = ?", (article_id,))
+        self.cursor.execute(
+            f"SELECT * FROM {self.articles_table_name} WHERE id = ?", (article_id,)
+        )
         article = self.cursor.fetchone()
 
         # Retrieve references.
-        self.cursor.execute(f"""
+        self.cursor.execute(
+            f"""
             SELECT referenced_article_id FROM {self.articles_references_table_name} WHERE article_id = ?
-        """, (article_id,))
+        """,
+            (article_id,),
+        )
         references = [row[0] for row in self.cursor.fetchall()]
 
         return article, references
@@ -247,7 +291,9 @@ class InCiteIRISDatabase:
         """
         Looks up a question by ID and returns its row.
         """
-        self.cursor.execute(f"SELECT * FROM {self.questions_table_name} WHERE id = ?", (question_id,))
+        self.cursor.execute(
+            f"SELECT * FROM {self.questions_table_name} WHERE id = ?", (question_id,)
+        )
         return self.cursor.fetchone()
 
     def insert_article_json(self, article_json):
@@ -261,16 +307,16 @@ class InCiteIRISDatabase:
         new_id = 1 if (max_id_row[0] is None) else int(max_id_row[0]) + 1
 
         # Extract fields from the JSON object.
-        name             = article_json.get("name")
-        url              = article_json.get("url")
-        authors          = article_json.get("authors")
-        content          = article_json.get("content")
+        name = article_json.get("name")
+        url = article_json.get("url")
+        authors = article_json.get("authors")
+        content = article_json.get("content")
         publication_date = article_json.get("publication_date")
-        summary          = article_json.get("summary")
-        method_issues    = article_json.get("method_issues")
-        coi              = article_json.get("coi")
-        future_research  = article_json.get("future_research", "")
-        out_references   = article_json.get("out_references", [])
+        summary = article_json.get("summary")
+        method_issues = article_json.get("method_issues")
+        coi = article_json.get("coi")
+        future_research = article_json.get("future_research", "")
+        out_references = article_json.get("out_references", [])
 
         # Compute the embedding for the article content.
         content_vector = self.embed_text(content)
@@ -282,7 +328,22 @@ class InCiteIRISDatabase:
           (id, name, url, authors, keywords, publication_date, content, content_vector, summary, method_issues, coi)
         VALUES (?, ?, ?, ?, ?, ?, ?, to_vector(?, double), ?, ?, ?)
         """
-        self.cursor.execute(sql, (new_id, name, url, authors, "", publication_date, content, vector_literal, summary, method_issues, coi))
+        self.cursor.execute(
+            sql,
+            (
+                new_id,
+                name,
+                url,
+                authors,
+                "",
+                publication_date,
+                content,
+                vector_literal,
+                summary,
+                method_issues,
+                coi,
+            ),
+        )
         self.conn.commit()
 
         # If there are outgoing references provided, insert them.
@@ -302,20 +363,25 @@ class InCiteIRISDatabase:
             "summary": summary,
             "method_issues": method_issues,
             "coi": coi,
-            "future_research": future_research
+            "future_research": future_research,
         }
 
     def lookup_article_json(self, article_id):
         """
         Looks up an article by its id and returns its details in JSON format.
         """
-        self.cursor.execute(f"SELECT * FROM {self.articles_table_name} WHERE id = ?", (article_id,))
+        self.cursor.execute(
+            f"SELECT * FROM {self.articles_table_name} WHERE id = ?", (article_id,)
+        )
         row = self.cursor.fetchone()
         if not row:
             return None
 
         # Retrieve outgoing references.
-        self.cursor.execute(f"SELECT referenced_article_id FROM {self.articles_references_table_name} WHERE article_id = ?", (article_id,))
+        self.cursor.execute(
+            f"SELECT referenced_article_id FROM {self.articles_references_table_name} WHERE article_id = ?",
+            (article_id,),
+        )
         refs = [str(r[0]) for r in self.cursor.fetchall()]
 
         return {
@@ -329,7 +395,7 @@ class InCiteIRISDatabase:
             "summary": row[8],
             "method_issues": row[9],
             "coi": row[10],
-            "future_research": ""
+            "future_research": "",
         }
 
     def query_articles_json(self, query_text, top_k=3):
@@ -352,7 +418,10 @@ class InCiteIRISDatabase:
         articles = []
         for row in rows:
             article_id = row[0]
-            self.cursor.execute(f"SELECT referenced_article_id FROM {self.articles_references_table_name} WHERE article_id = ?", (article_id,))
+            self.cursor.execute(
+                f"SELECT referenced_article_id FROM {self.articles_references_table_name} WHERE article_id = ?",
+                (article_id,),
+            )
             refs = [str(r[0]) for r in self.cursor.fetchall()]
 
             article_obj = {
@@ -366,7 +435,7 @@ class InCiteIRISDatabase:
                 "summary": row[8],
                 "method_issues": row[9],
                 "coi": row[10],
-                "future_research": ""
+                "future_research": "",
             }
             articles.append(article_obj)
         return articles
@@ -389,7 +458,7 @@ if __name__ == "__main__":
         content="This is an example article.",
         summary="This is a summary of the example article.",
         method_issues="No method issues.",
-        coi="No conflicts of interest."
+        coi="No conflicts of interest.",
     )
 
     # Insert another article.
@@ -403,7 +472,7 @@ if __name__ == "__main__":
         content="This is another example article.",
         summary="This is a summary of the second article.",
         method_issues="Minor method issues.",
-        coi="No conflicts of interest."
+        coi="No conflicts of interest.",
     )
 
     # Insert references (Article 1 references Article 2).
@@ -430,11 +499,7 @@ if __name__ == "__main__":
 
     # --- Questions Testing ---
     # Insert a question.
-    db.insert_question(
-        id=1,
-        question="What is an example?",
-        priority=1
-    )
+    db.insert_question(id=1, question="What is an example?", priority=1)
 
     # Query questions.
     results = db.query_questions("example", top_k=3)
@@ -469,7 +534,7 @@ if __name__ == "__main__":
         "summary": "This is a summary of the example article.",
         "method_issues": "No method issues.",
         "coi": "No conflicts of interest.",
-        "future_research": "Future research details."
+        "future_research": "Future research details.",
     }
     result_json_1 = db.insert_article_json(article_json_1)
     print("Inserted Article JSON 1:")
@@ -491,7 +556,7 @@ if __name__ == "__main__":
         "summary": "This is a summary of the second article.",
         "method_issues": "Minor method issues.",
         "coi": "No conflicts of interest.",
-        "future_research": ""
+        "future_research": "",
     }
     result_json_2 = db.insert_article_json(article_json_2)
     print("Inserted Article JSON 2:")
