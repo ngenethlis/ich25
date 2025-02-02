@@ -33,25 +33,9 @@ class InCiteIRISDatabase:
         self.questions_table_name = "InCite.Questions1"
 
         # Set up the tables.
-        # self.setup_tables()
+        # self.setup_tables() 
 
     def setup_tables(self):
-        # --- Article References Table ---
-        articles_references_table_definition = f"""
-        (
-          article_id BIGINT,
-          referenced_article_id BIGINT,
-          PRIMARY KEY (article_id, referenced_article_id),
-          FOREIGN KEY (article_id) REFERENCES {self.articles_table_name}(id),
-          FOREIGN KEY (referenced_article_id) REFERENCES {self.articles_table_name}(id)
-        )
-        """
-        try:
-            self.cursor.execute(f"DROP TABLE {self.articles_references_table_name}")
-        except Exception as e:
-            print("Article references table did not exist or could not be dropped, continuing...")
-        self.cursor.execute(f"CREATE TABLE {self.articles_references_table_name} {articles_references_table_definition}")
-        print("Article references table created successfully.")
 
         # --- Article Table ---
         articles_table_definition = """
@@ -80,26 +64,20 @@ class InCiteIRISDatabase:
         )
         print("Articles table created successfully.")
 
-
         # --- Article References Table ---
         articles_references_table_definition = f"""
         (
           article_id BIGINT,
-          referenced_article_id BIGINT,
-          PRIMARY KEY (article_id, referenced_article_id),
-          FOREIGN KEY (article_id) REFERENCES {self.articles_table_name}(id),
-          FOREIGN KEY (referenced_article_id) REFERENCES {self.articles_table_name}(id)
+          name VARCHAR(255),
+          PRIMARY KEY (article_id, name),
+          FOREIGN KEY (article_id) REFERENCES {self.articles_table_name}(id)
         )
         """
         try:
             self.cursor.execute(f"DROP TABLE {self.articles_references_table_name}")
         except Exception as e:
-            print(
-                "Article references table did not exist or could not be dropped, continuing..."
-            )
-        self.cursor.execute(
-            f"CREATE TABLE {self.articles_references_table_name} {articles_references_table_definition}"
-        )
+            print("Article references table did not exist or could not be dropped, continuing...")
+        self.cursor.execute(f"CREATE TABLE {self.articles_references_table_name} {articles_references_table_definition}")
         print("Article references table created successfully.")
 
         # --- Questions Table ---
@@ -239,17 +217,18 @@ class InCiteIRISDatabase:
 
         return article, references
 
-    def insert_article_references(self, article_id, referenced_article_ids):
+    def insert_article_references(self, article_id, reference_names):
         """
         Inserts multiple article references into the ArticleReferences table.
+        Takes a list of reference names as strings.
         """
         try:
-            for ref_id in referenced_article_ids:
+            for ref_name in reference_names:
                 sql = f"""
-                INSERT INTO {self.articles_references_table_name} (article_id, referenced_article_id)
+                INSERT INTO {self.articles_references_table_name} (article_id, name)
                 VALUES (?, ?)
                 """
-                self.cursor.execute(sql, (article_id, ref_id))
+                self.cursor.execute(sql, (article_id, ref_name))
             self.conn.commit()
             print(f"References for article {article_id} inserted successfully.")
         except dbapi.IntegrityError as e:
@@ -370,8 +349,7 @@ class InCiteIRISDatabase:
 
         # If there are outgoing references provided, insert them.
         if out_references:
-            refs = [int(ref) for ref in out_references]
-            self.insert_article_references(new_id, refs)
+            self.insert_article_references(new_id, out_references)
 
         # Build and return the JSON object.
         return {
@@ -441,7 +419,7 @@ class InCiteIRISDatabase:
         for row in rows:
             article_id = row[0]
             self.cursor.execute(
-                f"SELECT referenced_article_id FROM {self.articles_references_table_name} WHERE article_id = ?",
+                f"SELECT name FROM {self.articles_references_table_name} WHERE article_id = ?",
                 (article_id,),
             )
             refs = [str(r[0]) for r in self.cursor.fetchall()]
@@ -461,135 +439,3 @@ class InCiteIRISDatabase:
             }
             articles.append(article_obj)
         return articles
-
-
-# --- Testing the Class ---
-if __name__ == "__main__":
-    # Instantiate the database interface.
-    db = InCiteIRISDatabase()
-
-    # --- Articles Testing ---
-    # Insert an article.
-    db.insert_article(
-        id=1,
-        name="Example Article",
-        url="https://example.com",
-        authors="John Doe",
-        keywords="Example, Test",
-        publication_date="2022-01-01",
-        content="This is an example article.",
-        summary="This is a summary of the example article.",
-        method_issues="No method issues.",
-        coi="No conflicts of interest.",
-    )
-
-    # Insert another article.
-    db.insert_article(
-        id=2,
-        name="Second Article",
-        url="https://second.com",
-        authors="Jane Doe",
-        keywords="Second, Test",
-        publication_date="2022-02-01",
-        content="This is another example article.",
-        summary="This is a summary of the second article.",
-        method_issues="Minor method issues.",
-        coi="No conflicts of interest.",
-    )
-
-    # Insert references (Article 1 references Article 2).
-    db.insert_article_references(article_id=1, referenced_article_ids=[2])
-
-    # Lookup article and display its details and references.
-    article, references = db.lookup_article(1)
-    print("Article Details:", article)
-    print("References:", references)
-
-    # Query the articles table with a text query.
-    query_str = "example"
-    results = db.query_articles(query_str, top_k=3)
-    for row in results:
-        print("ID:", row[0])
-        print("Name:", row[1])
-        print("URL:", row[2])
-        print("Authors:", row[3])
-        print("Keywords:", row[4])
-        print("Publication Date:", row[5])
-        print("Content:", row[6])
-        print("Similarity Score:", row[7])
-        print("-" * 80)
-
-    # --- Questions Testing ---
-    # Insert a question.
-    db.insert_question(id=1, question="What is an example?", priority=1)
-
-    # Query questions.
-    results = db.query_questions("example", top_k=3)
-    for row in results:
-        print("ID:", row[0])
-        print("Question:", row[1])
-        print("Priority:", row[2])
-        print("Similarity Score:", row[3])
-        print("-" * 80)
-
-    # Lookup a question.
-    question_row = db.lookup_question(1)
-    print("Lookup Question (id=1):", question_row)
-
-    # --- Testing JSON Functions ---
-    print("Starting tests for JSON functions...")
-
-    # Clear any existing data for a clean testing environment.
-    db.cursor.execute(f"DELETE FROM {db.articles_references_table_name}")
-    db.cursor.execute(f"DELETE FROM {db.articles_table_name}")
-    db.conn.commit()
-
-    # Test 1: Insert an article with no outgoing references.
-    article_json_1 = {
-        "name": "Example Article",
-        "url": "https://example.com",
-        "authors": "John Doe",
-        "content": "This is an example article.",
-        "publication_date": "2022-01-01",
-        "out_references": [],
-        "num_out": 0,
-        "summary": "This is a summary of the example article.",
-        "method_issues": "No method issues.",
-        "coi": "No conflicts of interest.",
-        "future_research": "Future research details.",
-    }
-    result_json_1 = db.insert_article_json(article_json_1)
-    print("Inserted Article JSON 1:")
-    print(result_json_1)
-
-    lookup_json_1 = db.lookup_article_json(1)
-    print("Lookup Article JSON 1 (id=1):")
-    print(lookup_json_1)
-
-    # Test 2: Insert a second article that references the first article.
-    article_json_2 = {
-        "name": "Second Article",
-        "url": "https://second.com",
-        "authors": "Jane Doe",
-        "content": "This is another example article.",
-        "publication_date": "2022-02-01",
-        "out_references": ["1"],
-        "num_out": 1,
-        "summary": "This is a summary of the second article.",
-        "method_issues": "Minor method issues.",
-        "coi": "No conflicts of interest.",
-        "future_research": "",
-    }
-    result_json_2 = db.insert_article_json(article_json_2)
-    print("Inserted Article JSON 2:")
-    print(result_json_2)
-
-    lookup_json_2 = db.lookup_article_json(2)
-    print("Lookup Article JSON 2 (id=2):")
-    print(lookup_json_2)
-
-    # Test 3: Query articles using a text search.
-    query_results = db.query_articles_json("example", top_k=5)
-    print("Query Articles JSON Results for query 'example':")
-    for article in query_results:
-        print(article)

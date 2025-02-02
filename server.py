@@ -11,7 +11,7 @@ from concurrent.futures import ProcessPoolExecutor
 from functools import partial
 
 app = Flask(__name__)
-CORS(app)
+CORS(app)   
 
 vector_db = InCiteIRISDatabase()
 paper_analyser = PaperAnalyser()
@@ -23,6 +23,14 @@ class APIError(Exception):
         self.message = message
         self.status_code = status_code
         super().__init__(message)
+
+def analyze_paper(paper):
+    analysis = paper_analyser.summarize(paper['content'])
+    paper['summary'] = analysis.summary
+    paper['method_issues'] = analysis.methodological_issues
+    paper['coi'] = analysis.conflict_of_interest
+    paper['future_research'] = analysis.future_research
+    return paper
 
 @app.errorhandler(APIError)
 def handle_api_error(error: APIError) -> tuple[Dict[str, Any], int]:
@@ -44,32 +52,24 @@ async def get_graph():
     
     papers = vector_db.query_articles_json(query, 100)
     if not papers:
+        print("Cache Miss")
         kw = generate_keywords_with_claude(query)
-        papers = get_papers(kw, 1)
-        print(papers)
-
-        def analyze_paper(paper):
-            analysis = paper_analyser.summarize(paper['content'])
-            paper['summary'] = analysis.summary
-            paper['method_issues'] = analysis.methodological_issues
-            paper['coi'] = analysis.conflict_of_interest
-            paper['future_research'] = analysis.future_research
-            return paper
-
+        papers = get_papers(kw, 10)
+        print([paper['name'] for paper in papers])
+        print("Analyzing papers")
         # Use ProcessPoolExecutor for CPU-intensive tasks
         with ProcessPoolExecutor() as executor:
             # Create a partial function with the paper_analyser instance
             papers = list(executor.map(analyze_paper, papers))
+        print("Inserting papers into DB")
         for paper in papers:
             vector_db.insert_article_json(paper)
-        papers = apply_in_refs(papers)
-        print(papers)
     else:
         print("Cache Hit")
+
+    papers = apply_in_refs(papers)
     
     print([paper['summary'] for paper in papers])
-    
-    # graph = graph_generator.generate_graph(papers)
     
     try:
         # Process the query and generate graph
@@ -101,8 +101,6 @@ def apply_in_refs(papers):
     
     return papers
 
-
-
 @app.route('/get_paper', methods=['POST'])
 def get_paper():
     data = request.get_json()
@@ -129,3 +127,6 @@ def get_paper():
         return jsonify(result)
     except Exception as e:
         raise APIError(f'Error retrieving paper: {str(e)}')
+
+if __name__ == '__main__':
+    app.run(debug=True)
