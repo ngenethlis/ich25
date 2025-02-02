@@ -1,0 +1,26 @@
+{
+  "papers": [
+    {
+      "name": "Deep Learning for NLP",
+      "url": "https://example.com/deep-nlp",
+      "authors": ["John Doe", "Jane Smith"],
+      "keywords": ["deep learning", "NLP", "transformers"],
+      "publication_date": "2023-06-15",
+      "out_references": ["Attention Mechanisms", "Language Models"],
+      "num_out": 2,
+      "in_references": [],
+      "num_in": 0
+    },
+    {
+      "name": "Attention Mechanisms",
+      "url": "https://example.com/attention",
+      "authors": ["Alice Brown"],
+      "keywords": ["attention", "neural networks"],
+      "publication_date": "2021-05-10",
+      "out_references": ["Sequence Modelling"],
+      "num_out": 1,
+      "in_references": ["Deep Learning for NLP"],
+      "num_in": 1
+    }
+  ]
+}

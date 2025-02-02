@@ -1,0 +1,437 @@
+:root {
+  --primary: #a259ff;
+  --secondary: #2d2d2d;
+  --accent: #0acf83;
+  --background: #121212;
+  --text: #ffffff;
+  --card-bg: #1e1e1e;
+  --hover-bg: #2d2d2d;
+}
+
+body {
+  background-color: hsla(289, 0%, 0%, 1);
+  background-image: radial-gradient(
+      at 55% 63%,
+      hsla(313, 68%, 67%, 0.15) 0px,
+      transparent 50%
+    ),
+    radial-gradient(at 26% 83%, hsla(291, 67%, 72%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 72% 1%, hsla(233, 92%, 76%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 7% 46%, hsla(101, 63%, 68%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 57% 55%, hsla(351, 83%, 65%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 32% 55%, hsla(245, 62%, 66%, 0.15) 0px, transparent 50%),
+    radial-gradient(at 96% 25%, hsla(273, 74%, 76%, 0.15) 0px, transparent 50%);
+  color: var(--text);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  background-attachment: fixed;
+}
+
+.container {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  color: var(--text);
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Navigation Bar */
+.nav-bar {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  background: var(--card-bg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  border-radius: 9999px;
+  margin: 20px auto;
+  padding: 6px;
+  max-width: 800px;
+}
+
+.nav-button {
+  padding: 8px 25px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  height: 36px;
+}
+
+.nav-button.active-tab {
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(162, 89, 255, 0.2);
+}
+
+.nav-button:hover:not(.active-tab) {
+  background: rgba(162, 89, 255, 0.15);
+}
+
+/* Input Section */
+.input-container {
+  display: flex;
+  gap: 10px;
+  max-width: 800px;
+  margin: 30px auto;
+  align-items: center;
+}
+
+.input-field {
+  flex: 1;
+  padding: 8px 20px;
+  background: var(--card-bg);
+  border-color: var(--secondary);
+  color: var(--text);
+  font-size: 14px;
+  border: 2px solid var(--secondary);
+  border-radius: 12px;
+  transition: border-color 0.3s ease;
+  height: 40px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+.submit-button {
+  padding: 8px 30px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  height: 40px;
+}
+
+.submit-button:hover {
+  background: #8a42e6;
+  transform: translateY(-2px);
+}
+
+/* Display Selector */
+.display-selector {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  max-width: 800px;
+  margin: 20px auto;
+}
+
+.display-button {
+  padding: 6px 25px;
+  border: 2px solid var(--secondary);
+  background: transparent;
+  cursor: pointer;
+  border-radius: 9999px;
+  color: var(--text);
+  transition: all 0.2s ease;
+  font-size: 14px;
+  height: 36px;
+}
+
+.display-button.active-display {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.display-button:hover {
+  border-color: var(--primary);
+}
+
+/* Cards layout */
+.card-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* Card header with title and favorite button on the right */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  color: var(--primary);
+  font-size: 1.2em;
+  font-weight: 600;
+  margin: 0; /* remove extra margin if any */
+  /* margin-bottom: 12px; no longer needed here since favorite button is next to it */
+}
+
+.favorite-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 5px;
+  transition: all 0.2s ease;
+}
+
+.favorite-button:hover {
+  transform: scale(1.2);
+}
+
+.favorite-button.favorited {
+  color: #ffd700; /* Gold color for favorited state */
+}
+
+.card-authors {
+  color: #b0b0b0;
+  font-size: 0.95em;
+  margin: 8px 0;
+}
+
+.card-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.card-keywords span {
+  background: rgba(162, 89, 255, 0.1);
+  color: var(--primary);
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.card-meta {
+  display: flex;
+  justify-content: space-between;
+  color: #909090;
+  font-size: 0.8em;
+  margin-top: 15px;
+}
+
+/* Card Detail Overlay */
+.card-detail-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.card-detail-content {
+  background: var(--card-bg);
+  color: var(--text);
+  padding: 30px;
+  border-radius: 24px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: var(--hover-bg);
+  color: #333;
+}
+
+.detail-section {
+  margin: 20px 0;
+  padding: 20px;
+  background: var(--hover-bg);
+  border-radius: 12px;
+}
+
+.detail-section a {
+  color: var(--primary);
+}
+
+.detail-section label {
+  display: block;
+  background: var(--secondary);
+  color: var(--primary);
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.detail-link {
+  display: inline-block;
+  background: var(--primary);
+  color: white;
+  padding: 8px 20px;
+  border-radius: 9999px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+.detail-link:hover {
+  background: #8a42e6;
+  transform: translateY(-2px);
+}
+
+/* Error Message */
+.error-message {
+  background: rgba(255, 71, 71, 0.15);
+  color: #ff4747;
+  border: 2px solid #ffb8b8;
+  border-color: rgba(255, 71, 71, 0.3);
+  border-radius: 12px;
+  padding: 15px 20px;
+  margin: 20px auto;
+  max-width: 800px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .card-container {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .nav-bar {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px;
+  }
+
+  .nav-button {
+    padding: 6px 15px;
+    font-size: 12px;
+    height: 32px;
+  }
+
+  .input-container {
+    flex-direction: column;
+  }
+
+  .input-field,
+  .submit-button {
+    width: 100%;
+    padding: 6px 15px;
+    height: 36px;
+  }
+
+  .display-selector {
+    flex-wrap: wrap;
+  }
+
+  .display-button {
+    padding: 4px 15px;
+    border-color: var(--secondary);
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .card-detail-content {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    gap: 20px;
+  }
+
+  .title {
+    font-size: 1.8rem;
+    white-space: nowrap;
+    font-weight: bold;
+    margin: 0;
+  }
+  .graph_container {
+    height: 600px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 20px;
+  }
+
+  .node-detail-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .node-detail-content {
+    background: var(--card-bg);
+    color: var(--text);
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+  }
+}
