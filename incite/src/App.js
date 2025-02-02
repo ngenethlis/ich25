@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ReactFlow, { Controls, Background } from "reactflow";
+import { motion } from "framer-motion"
 import "reactflow/dist/style.css";
 import './App.css';
 
@@ -317,339 +318,345 @@ function App() {
     const favoritesCount = cards.filter(card => card.isFavorite).length;
 
     return (
-        <div className="container">
-            <div className="header">
-                <h1 className="title">InCite</h1>
-                <div className="nav-bar">
-                    {['home', 'gaps', 'collections'].map((tab) => (
-                        <button
-                            key={tab}
-                            className={`nav-button ${activeTab === tab ? 'active-tab' : ''}`}
-                            onClick={() => setActiveTab(tab)}
-                        >
-                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                            {tab === 'collections' && ` (${favoritesCount})`}
-                        </button>
-                    ))}
-                </div>
-            </div>
 
-            {activeTab === 'collections' ? (
-                // Collections View
-                <div className="card-container">
-                    {[0, 1].map((colIndex) => (
-                        <div key={colIndex} className="column">
-                            {cards
-                                .filter(card => card.isFavorite)
-                                .filter((_, index) => index % 2 === colIndex)
-                                .map((card, index) => (
-                                    <div
-                                        key={index}
-                                        className="card"
-                                        onClick={() => setSelectedCard(card)}
-                                    >
-                                        <div className="card-header">
-                                            <h3 className="card-title">{card.name}</h3>
-                                            <button
-                                                className={`favorite-button ${card.isFavorite ? 'favorited' : ''}`}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleFavorite(card.name);
-                                                }}
-                                            >
-                                                {card.isFavorite ? '⭐' : '☆'}
-                                            </button>
+        <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.3 }}
+        >
+            <div className="container">
+                <div className="header">
+                    <h1 className="title">InCite</h1>
+                    <div className="nav-bar">
+                        {['home', 'gaps', 'collections'].map((tab) => (
+                            <button
+                                key={tab}
+                                className={`nav-button ${activeTab === tab ? 'active-tab' : ''}`}
+                                onClick={() => setActiveTab(tab)}
+                            >
+                                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                                {tab === 'collections' && ` (${favoritesCount})`}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {activeTab === 'collections' ? (
+                    // Collections View
+                    <div className="card-container">
+                        {[0, 1].map((colIndex) => (
+                            <div key={colIndex} className="column">
+                                {cards
+                                    .filter(card => card.isFavorite)
+                                    .filter((_, index) => index % 2 === colIndex)
+                                    .map((card, index) => (
+                                        <div
+                                            key={index}
+                                            className="card"
+                                            onClick={() => setSelectedCard(card)}
+                                        >
+                                            <div className="card-header">
+                                                <h3 className="card-title">{card.name}</h3>
+                                                <button
+                                                    className={`favorite-button ${card.isFavorite ? 'favorited' : ''}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleFavorite(card.name);
+                                                    }}
+                                                >
+                                                    {card.isFavorite ? '⭐' : '☆'}
+                                                </button>
+                                            </div>
+                                            <div className="card-authors">{card.authors}</div>
+                                            {/*<div className="card-keywords">{card.keywords.join(', ')}</div>*/}
+                                            <div className="card-meta">
+                                                <span>📅 {card.publication_date}</span>
+                                                <span>🔗 {card.num_out} references</span>
+                                            </div>
                                         </div>
-                                        <div className="card-authors">{card.authors}</div>
-                                        {/*<div className="card-keywords">{card.keywords.join(', ')}</div>*/}
-                                        <div className="card-meta">
-                                            <span>📅 {card.publication_date}</span>
-                                            <span>🔗 {card.num_out} references</span>
-                                        </div>
+                                    ))}
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    // Regular View
+                    <>
+                        {/* Prompt Input */}
+                        <form onSubmit={handleSubmit} className="input-container">
+                            <input
+                                type="text"
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                placeholder="Enter prompt..."
+                                className="input-field"
+                            />
+                            <button type="submit" className="submit-button">
+                                Submit
+                            </button>
+                        </form>
+                        {error && <div className="error-message">{error}</div>}
+
+                        {/* Display Type Selector */}
+                        <div className="display-selector">
+                            <button
+                                className={`display-button ${displayType === 'cards' ? 'active-display' : ''}`}
+                                onClick={() => setDisplayType('cards')}
+                            >
+                                Cards
+                            </button>
+                            <button
+                                className={`display-button ${displayType === 'graph' ? 'active-display' : ''}`}
+                                onClick={() => setDisplayType('graph')}
+                            >
+                                Graph
+                            </button>
+                        </div>
+
+                        {/* Content Area */}
+                        {displayType === 'cards' ? (
+                            <div className="card-container">
+                                {[0, 1].map((colIndex) => (
+                                    <div key={colIndex} className="column">
+                                        {cards
+                                            .filter((_, index) => index % 2 === colIndex)
+                                            .map((card, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="card"
+                                                    onClick={() => setSelectedCard(card)}
+                                                >
+                                                    <div className="card-header">
+                                                        <h3 className="card-title">{card.name}</h3>
+                                                        <button
+                                                            className={`favorite-button ${card.isFavorite ? 'favorited' : ''}`}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                toggleFavorite(card.name);
+                                                            }}
+                                                        >
+                                                            {card.isFavorite ? '⭐' : '☆'}
+                                                        </button>
+                                                    </div>
+                                                    <div className="card-authors">{card.authors}</div>
+                                                    {/* <div className="card-content">{card.content.join(', ')}</div>*/}
+                                                    <div className="card-meta">
+                                                        <span>📅 {card.publication_date}</span>
+                                                        <span>🔗 {card.num_out} references</span>
+                                                    </div>
+                                                </div>
+                                            ))}
                                     </div>
                                 ))}
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                // Regular View
-                <>
-                    {/* Prompt Input */}
-                    <form onSubmit={handleSubmit} className="input-container">
-                        <input
-                            type="text"
-                            value={inputText}
-                            onChange={(e) => setInputText(e.target.value)}
-                            placeholder="Enter prompt..."
-                            className="input-field"
-                        />
-                        <button type="submit" className="submit-button">
-                            Submit
-                        </button>
-                    </form>
-                    {error && <div className="error-message">{error}</div>}
+                            </div>
+                        ) : (
+                            <div className="graph-container" style={{ display: "flex", height: "100vh", flexDirection: "row" }}>
+                                {graph.nodes.length > 0 ? (
+                                    <ReactFlow nodes={graph.nodes} edges={graph.edges} onNodeClick={handleNodeClick}>
+                                        <Controls position='top-left' />
+                                        <Background />
+                                    </ReactFlow>
+                                ) : (
+                                    <p>No graph data available</p>
+                                )}
+                            </div>
+                        )}
+                    </>
+                )}
 
-                    {/* Display Type Selector */}
-                    <div className="display-selector">
-                        <button
-                            className={`display-button ${displayType === 'cards' ? 'active-display' : ''}`}
-                            onClick={() => setDisplayType('cards')}
-                        >
-                            Cards
-                        </button>
-                        <button
-                            className={`display-button ${displayType === 'graph' ? 'active-display' : ''}`}
-                            onClick={() => setDisplayType('graph')}
-                        >
-                            Graph
-                        </button>
-                    </div>
+                {/* Card Detail Overlay */}
+                {selectedCard && (
+                    <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
+                )}
 
-                    {/* Content Area */}
-                    {displayType === 'cards' ? (
-                        <div className="card-container">
-                            {[0, 1].map((colIndex) => (
-                                <div key={colIndex} className="column">
-                                    {cards
-                                        .filter((_, index) => index % 2 === colIndex)
-                                        .map((card, index) => (
-                                            <div
-                                                key={index}
-                                                className="card"
-                                                onClick={() => setSelectedCard(card)}
-                                            >
-                                                <div className="card-header">
-                                                    <h3 className="card-title">{card.name}</h3>
-                                                    <button
-                                                        className={`favorite-button ${card.isFavorite ? 'favorited' : ''}`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            toggleFavorite(card.name);
-                                                        }}
-                                                    >
-                                                        {card.isFavorite ? '⭐' : '☆'}
-                                                    </button>
-                                                </div>
-                                                <div className="card-authors">{card.authors}</div>
-                                                {/* <div className="card-content">{card.content.join(', ')}</div>*/}
-                                                <div className="card-meta">
-                                                    <span>📅 {card.publication_date}</span>
-                                                    <span>🔗 {card.num_out} references</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="graph-container" style={{ display: "flex", height: "100vh", flexDirection: "row" }}>
-                            {graph.nodes.length > 0 ? (
-                                <ReactFlow nodes={graph.nodes} edges={graph.edges} onNodeClick={handleNodeClick}>
-                                    <Controls position='top-left' />
-                                    <Background />
-                                </ReactFlow>
-                            ) : (
-                                <p>No graph data available</p>
-                            )}
-                        </div>
-                    )}
-                </>
-            )}
-
-            {/* Card Detail Overlay */}
-            {selectedCard && (
-                <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
-            )}
-
-            {selectedNode && (
-                <div
-                    style={{
-                        width: "30%",
-                        backgroundColor: "var(--card-bg)",
-                        padding: "20px",
-                        position: "absolute",
-                        right: 0,
-                        top: 0,
-                        height: "100%",
-                        overflowY: "auto",
-                        boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
-                    <div>
-                        <h3>Name: {selectedNode.name}</h3>
-                        <p><strong>Authors:</strong> {selectedNode.authors}</p>
-                        <p><strong>Publication Date:</strong> {selectedNode.publication_date}</p>
-                        <p><strong>URL:</strong> <a href={selectedNode.url} target="_blank" rel="noopener noreferrer">{selectedNode.url}</a></p>
-
-
-
-                        {/* Out References */}
-                        <p>
-                            <strong>References:</strong>
-                            {selectedNode.num_out > 0 ? (
-                                selectedNode.out_references.map((ref) => (
-                                    <button
-                                        key={ref}
-                                        onClick={() => handleReferenceClick(ref)}
-                                        style={{
-                                            margin: "2px",
-                                            padding: "4px 8px",
-                                            background: "#007bff",
-                                            border: "none",
-                                            color: "white",
-                                            cursor: "pointer",
-                                            borderRadius: "4px",
-                                        }}
-                                    >
-                                        {ref}
-                                    </button>
-                                ))
-                            ) : (
-                                " None"
-                            )}
-                        </p>
-
-                        {/* In References */}
-                        <p>
-                            <strong>Referenced by:</strong>
-                            {selectedNode.num_in > 0 ? (
-                                selectedNode.in_references.map((ref) => (
-                                    <button
-                                        key={ref}
-                                        onClick={() => handleReferenceClick(ref)}
-                                        style={{
-                                            margin: "2px",
-                                            padding: "4px 8px",
-                                            background: "#28a745",
-                                            border: "none",
-                                            color: "white",
-                                            cursor: "pointer",
-                                            borderRadius: "4px",
-                                        }}
-                                    >
-                                        {ref}
-                                    </button>
-                                ))
-                            ) : (
-                                " None"
-                            )}
-                        </p>
-                    </div>
-                    <button
-                        onClick={() => setSelectedNode(null)}
+                {selectedNode && (
+                    <div
                         style={{
-                            marginTop: "20px",
-                            padding: "10px",
-                            background: "yellow",
-                            border: "none",
-                            color: "blue",
-                            cursor: "pointer",
-                            borderRadius: "5px",
+                            width: "30%",
+                            backgroundColor: "var(--card-bg)",
+                            padding: "20px",
+                            position: "absolute",
+                            right: 0,
+                            top: 0,
+                            height: "100%",
+                            overflowY: "auto",
+                            boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
                         }}
                     >
-                        Close
-                    </button>
-                </div>
-            )}
-        
-        )}
-
-            {/* Card Detail Overlay */}
-            {selectedCard && (
-                <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
-            )}
-
-            {selectedNode && (
-                <div
-                    style={{
-                        width: "30%",
-                        backgroundColor: "var(--card-bg)",
-                        padding: "20px",
-                        position: "absolute",
-                        right: 0,
-                        top: 0,
-                        height: "100%",
-                        overflowY: "auto",
-                        boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
-                    }}
-                >
-                    <div>
-                        <h3>Name: {selectedNode.name}</h3>
-                        <p><strong>Authors:</strong> {selectedNode.authors}</p>
-                        <p><strong>Publication Date:</strong> {selectedNode.publication_date}</p>
-                        <p><strong>URL:</strong> <a href={selectedNode.url} target="_blank" rel="noopener noreferrer">{selectedNode.url}</a></p>
+                        <div>
+                            <h3>Name: {selectedNode.name}</h3>
+                            <p><strong>Authors:</strong> {selectedNode.authors}</p>
+                            <p><strong>Publication Date:</strong> {selectedNode.publication_date}</p>
+                            <p><strong>URL:</strong> <a href={selectedNode.url} target="_blank" rel="noopener noreferrer">{selectedNode.url}</a></p>
 
 
 
-                        {/* Out References */}
-                        <p>
-                            <strong>References:</strong>
-                            {selectedNode.num_out > 0 ? (
-                                selectedNode.out_references.map((ref) => (
-                                    <button
-                                        key={ref}
-                                        onClick={() => handleReferenceClick(ref)}
-                                        style={{
-                                            margin: "2px",
-                                            padding: "4px 8px",
-                                            background: "#007bff",
-                                            border: "none",
-                                            color: "white",
-                                            cursor: "pointer",
-                                            borderRadius: "4px",
-                                        }}
-                                    >
-                                        {ref}
-                                    </button>
-                                ))
-                            ) : (
-                                " None"
-                            )}
-                        </p>
+                            {/* Out References */}
+                            <p>
+                                <strong>References:</strong>
+                                {selectedNode.num_out > 0 ? (
+                                    selectedNode.out_references.map((ref) => (
+                                        <button
+                                            key={ref}
+                                            onClick={() => handleReferenceClick(ref)}
+                                            style={{
+                                                margin: "2px",
+                                                padding: "4px 8px",
+                                                background: "#007bff",
+                                                border: "none",
+                                                color: "white",
+                                                cursor: "pointer",
+                                                borderRadius: "4px",
+                                            }}
+                                        >
+                                            {ref}
+                                        </button>
+                                    ))
+                                ) : (
+                                    " None"
+                                )}
+                            </p>
 
-                        {/* In References */}
-                        <p>
-                            <strong>Referenced by:</strong>
-                            {selectedNode.num_in > 0 ? (
-                                selectedNode.in_references.map((ref) => (
-                                    <button
-                                        key={ref}
-                                        onClick={() => handleReferenceClick(ref)}
-                                        style={{
-                                            margin: "2px",
-                                            padding: "4px 8px",
-                                            background: "#28a745",
-                                            border: "none",
-                                            color: "white",
-                                            cursor: "pointer",
-                                            borderRadius: "4px",
-                                        }}
-                                    >
-                                        {ref}
-                                    </button>
-                                ))
-                            ) : (
-                                " None"
-                            )}
-                        </p>
+                            {/* In References */}
+                            <p>
+                                <strong>Referenced by:</strong>
+                                {selectedNode.num_in > 0 ? (
+                                    selectedNode.in_references.map((ref) => (
+                                        <button
+                                            key={ref}
+                                            onClick={() => handleReferenceClick(ref)}
+                                            style={{
+                                                margin: "2px",
+                                                padding: "4px 8px",
+                                                background: "#28a745",
+                                                border: "none",
+                                                color: "white",
+                                                cursor: "pointer",
+                                                borderRadius: "4px",
+                                            }}
+                                        >
+                                            {ref}
+                                        </button>
+                                    ))
+                                ) : (
+                                    " None"
+                                )}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setSelectedNode(null)}
+                            style={{
+                                marginTop: "20px",
+                                padding: "10px",
+                                background: "yellow",
+                                border: "none",
+                                color: "blue",
+                                cursor: "pointer",
+                                borderRadius: "5px",
+                            }}
+                        >
+                            Close
+                        </button>
                     </div>
-                    <button
-                        onClick={() => setSelectedNode(null)}
+                )}
+
+                {/* Card Detail Overlay */}
+                {selectedCard && (
+                    <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
+                )}
+
+                {selectedNode && (
+                    <div
                         style={{
-                            marginTop: "20px",
-                            padding: "10px",
-                            background: "yellow",
-                            border: "none",
-                            color: "blue",
-                            cursor: "pointer",
-                            borderRadius: "5px",
+                            width: "30%",
+                            backgroundColor: "var(--card-bg)",
+                            padding: "20px",
+                            position: "absolute",
+                            right: 0,
+                            top: 0,
+                            height: "100%",
+                            overflowY: "auto",
+                            boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
                         }}
                     >
-                        Close
-                    </button>
-                </div>
-            )}
-        </div>
+                        <div>
+                            <h3>Name: {selectedNode.name}</h3>
+                            <p><strong>Authors:</strong> {selectedNode.authors}</p>
+                            <p><strong>Publication Date:</strong> {selectedNode.publication_date}</p>
+                            <p><strong>URL:</strong> <a href={selectedNode.url} target="_blank" rel="noopener noreferrer">{selectedNode.url}</a></p>
+
+
+
+                            {/* Out References */}
+                            <p>
+                                <strong>References:</strong>
+                                {selectedNode.num_out > 0 ? (
+                                    selectedNode.out_references.map((ref) => (
+                                        <button
+                                            key={ref}
+                                            onClick={() => handleReferenceClick(ref)}
+                                            style={{
+                                                margin: "2px",
+                                                padding: "4px 8px",
+                                                background: "#007bff",
+                                                border: "none",
+                                                color: "white",
+                                                cursor: "pointer",
+                                                borderRadius: "4px",
+                                            }}
+                                        >
+                                            {ref}
+                                        </button>
+                                    ))
+                                ) : (
+                                    " None"
+                                )}
+                            </p>
+
+                            {/* In References */}
+                            <p>
+                                <strong>Referenced by:</strong>
+                                {selectedNode.num_in > 0 ? (
+                                    selectedNode.in_references.map((ref) => (
+                                        <button
+                                            key={ref}
+                                            onClick={() => handleReferenceClick(ref)}
+                                            style={{
+                                                margin: "2px",
+                                                padding: "4px 8px",
+                                                background: "#28a745",
+                                                border: "none",
+                                                color: "white",
+                                                cursor: "pointer",
+                                                borderRadius: "4px",
+                                            }}
+                                        >
+                                            {ref}
+                                        </button>
+                                    ))
+                                ) : (
+                                    " None"
+                                )}
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setSelectedNode(null)}
+                            style={{
+                                marginTop: "20px",
+                                padding: "10px",
+                                background: "yellow",
+                                border: "none",
+                                color: "blue",
+                                cursor: "pointer",
+                                borderRadius: "5px",
+                            }}
+                        >
+                            Close
+                        </button>
+                    </div>
+                )}
+            </div>
+        </motion.div >
     );
 }
 
