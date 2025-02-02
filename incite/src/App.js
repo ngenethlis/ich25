@@ -62,6 +62,15 @@ function App() {
                 id: node.name,
                 data: { label: node.name },
                 position: { x, y },
+                style: {
+                    backgroundColour: "var(--card-bg)",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    padding: "10px",
+                    width: "200px",
+                    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+                },
+
             };
         });
 
@@ -448,7 +457,7 @@ function App() {
             <div
             style={{
                 width: "30%",
-                    backgroundColor: "#f4f4f4",
+                    backgroundColor: "var(--card-bg)",
                     padding: "20px",
                     position: "absolute",
                     right: 0,
@@ -458,7 +467,6 @@ function App() {
                     boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
             }}
             >
-            <h2>Node Details</h2>
             <div>
             <h3>Name: {selectedNode.name}</h3>
             <p><strong>Authors:</strong> {selectedNode.authors}</p>
