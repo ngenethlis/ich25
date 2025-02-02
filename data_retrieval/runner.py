@@ -7,7 +7,7 @@ def main():
     for t in topics:
         kw = generate_keywords_with_claude(t)
         kws.append(kw)
-        papers = get_papers(kw, 5)
+        papers = get_papers(kw, 30)
         print(papers)
         
 
