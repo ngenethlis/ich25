@@ -4,15 +4,17 @@ from typing import Dict, Any
 from paper_evaluator import PaperAnalyser, AnalysisResponse
 from data_retrieval.retrieve_arxiv_papers import get_papers
 from data_retrieval.generate_claude_keywords import generate_keywords_with_claude
+from vector_db.InCiteOOP import InCiteIRISDatabase
 import asyncio
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
 
 app = Flask(__name__)
 CORS(app)
 
-vector_db = None
+vector_db = InCiteIRISDatabase()
 paper_analyser = PaperAnalyser()
 graph_generator = None
-
 
 # Error handling
 class APIError(Exception):
@@ -39,24 +41,29 @@ async def get_graph():
     if not isinstance(query, str):
         raise APIError('Query must be a string')
     
-    papers = None # vector_db.get_related_papers(query)
+    papers = vector_db.query_articles_json(query, 100)
     if not papers:
         kw = generate_keywords_with_claude(query)
         papers = get_papers(kw, 1)
         print(papers)
 
-        async def analyze_paper(paper):
+        def analyze_paper(paper):
             analysis = paper_analyser.summarize(paper['content'])
             paper['summary'] = analysis.summary
-            paper['method_issues'   ] = analysis.methodological_issues
+            paper['method_issues'] = analysis.methodological_issues
             paper['coi'] = analysis.conflict_of_interest
             paper['future_research'] = analysis.future_research
             return paper
         
-        # Create tasks for all papers and run them in parallel
-        tasks = [analyze_paper(paper) for paper in papers]
-        papers = await asyncio.gather(*tasks)
-        # vector_db.add_paper(paper)
+        # Use ProcessPoolExecutor for CPU-intensive tasks
+        with ProcessPoolExecutor() as executor:
+            # Create a partial function with the paper_analyser instance
+            papers = list(executor.map(analyze_paper, papers))
+        for paper in papers:
+            vector_db.insert_article_json(paper)
+        print(papers)
+    else:
+        print("Cache Hit")
     
     print([paper['summary'] for paper in papers])
     
