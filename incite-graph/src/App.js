@@ -173,49 +173,15 @@ const jsonData = [
   }
 
 ];
-// Convert JSON to React Flow nodes & edges
-const generateGraph = (data) => {
-  // Sort nodes by number of outgoing references
-  const sortedData = data.sort((a, b) => b.num_out - a.num_out);
-
-  // Create nodes and position them in a circle
-  const radiusStep = 150; // Distance between each "layer" of nodes
-  const totalNodes = sortedData.length;
-
-  const nodes = sortedData.map((node, index) => {
-    // Calculate angle for node positioning
-    const angle = (index / totalNodes) * 2 * Math.PI; // Divide circle into equal parts
-    const radius = radiusStep * Math.min(index, 2); // Control how spread out nodes are (adjust 2 for more spread)
-    const x = 300 + radius * Math.cos(angle); // x-position based on angle and radius
-    const y = 200 + radius * Math.sin(angle); // y-position based on angle and radius
-
-    return {
-      id: node.name,
-      data: { label: node.name },
-      position: { x, y },
-    };
-  });
-
-  // Create edges based on out_references
-  const edges = data.flatMap((node) =>
-    node.out_references.map((ref) => ({
-      id: `${node.name}-${ref}`,
-      source: node.name,
-      target: ref,
-      animated: true, // Makes edges animated
-    }))
-  );
-
-  return { nodes, edges };
-};
-
 // Function to generate Mermaid graph definition from JSON data
 const generateMermaidGraph = (data) => {
   let mermaidDefinition = "graph TD;\n";
 
   data.forEach((node) => {
+    const sanitizedNodeName = node.name.replace(/[^a-zA-Z0-9]/g, "_"); // Sanitize node names
     node.out_references.forEach((ref) => {
-      mermaidDefinition += `    ${node.name} --> ${ref};\n`;
+      const sanitizedRef = ref.replace(/[^a-zA-Z0-9]/g, "_"); // Sanitize reference names
+      mermaidDefinition += `    ${sanitizedNodeName} --> ${sanitizedRef};\n`;
     });
   });
 
@@ -224,77 +190,42 @@ const generateMermaidGraph = (data) => {
 
 const App = () => {
   const [mermaidGraph, setMermaidGraph] = useState("");
-  const graphContainerRef = useRef(null);
+  const [selectedNode, setSelectedNode] = useState(null);
 
   useEffect(() => {
     const graphDefinition = generateMermaidGraph(jsonData);
     setMermaidGraph(graphDefinition); // Set the generated graph definition
-
-    if (graphContainerRef.current) {
-      mermaid.contentLoaded();
-    }
   }, []);
+
+  // Handle node clicks
+  const handleNodeClick = (nodeId) => {
+    const nodeData = jsonData.find((node) => node.name.replace(/[^a-zA-Z0-9]/g, "_") === nodeId);
+    setSelectedNode(nodeData); // Update state with the clicked node's data
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
       <h1 style={{ textAlign: "center" }}>Mermaid Diagram</h1>
       <div style={{ flex: 1, overflow: "auto" }}>
-        <MermaidGraph graphDefinition={mermaidGraph} /> {/* Render the Mermaid graph */}
-      </div>
-    </div>
-  );
-};
-export default App;
-
-
-
-
-const App_circle = () => {
-  const [graph, setGraph] = useState({ nodes: [], edges: [] });
-  const [selectedNode, setSelectedNode] = useState(null);
-
-  useEffect(() => {
-    setGraph(generateGraph(jsonData));
-  }, []);
-
-  // Function to handle node clicks
-  const handleNodeClick = (event, node) => {
-    const nodeData = jsonData.find((item) => item.name === node.id);
-    setSelectedNode(nodeData); // Update state with the clicked node's data
-  };
-
-  return (
-    <div style={{ display: "flex", height: "100vh", flexDirection: "row" }}>
-      {/* React Flow container */}
-      <div style={{ flex: 1, position: "relative" }}>
-        <h1 style={{ textAlign: "center" }}>Graph Visualisation</h1>
-        <ReactFlow
-          nodes={graph.nodes}
-          edges={graph.edges}
-          onNodeClick={handleNodeClick} // Attach click handler
-        >
-          {/* Custom controls*/}
-          <Controls position="top-left" />
-        </ReactFlow>
+        <MermaidGraph graphDefinition={mermaidGraph} onNodeClick={handleNodeClick} />
       </div>
 
-      {/* Sidebar to display the selected node's data */}
+      {/* Display selected node data */}
       {selectedNode && (
         <div
           style={{
-            width: "50%",
-            backgroundColor: "#f4f4f4",
-            padding: "20px",
-            position: "absolute",
+            position: "fixed",
             right: 0,
             top: 0,
+            width: "30%",
             height: "100%",
-            overflowY: "auto",
+            backgroundColor: "#f4f4f4",
+            padding: "20px",
             boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
+            overflowY: "auto",
           }}
         >
           <h2>Node Details</h2>
-
           <div>
             <h3>Name: {selectedNode.name}</h3>
             <p><strong>Authors:</strong> {selectedNode.authors.join(", ")}</p>
@@ -304,11 +235,10 @@ const App_circle = () => {
             <p><strong>Out References:</strong> {selectedNode.out_references.join(", ") || "None"}</p>
             <p><strong>In References:</strong> {selectedNode.in_references.join(", ") || "None"}</p>
           </div>
-
           <button
             onClick={() => setSelectedNode(null)}
             style={{
-              marginBottom: "20px",
+              marginTop: "20px",
               padding: "10px",
               background: "#ff6347",
               border: "none",
@@ -319,11 +249,10 @@ const App_circle = () => {
           >
             Close
           </button>
-
         </div>
       )}
     </div>
   );
 };
 
-//export default App;
+export default App;

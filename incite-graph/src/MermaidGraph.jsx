@@ -1,25 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import mermaid from "mermaid";
 
 const MermaidGraph = ({ graphDefinition }) => {
-  const graphContainerRef = useRef(null);
+  const graphRef = useRef(null);
 
   useEffect(() => {
-    // Initialize Mermaid and render the graph
-    mermaid.initialize({ startOnLoad: true });
+    if (graphRef.current && graphDefinition) {
+      // Initialize Mermaid
+      mermaid.initialize({ startOnLoad: true });
 
-    // Ensure Mermaid processes the content
-    if (graphContainerRef.current) {
+      // Render the graph
       mermaid.contentLoaded();
     }
   }, [graphDefinition]);
 
   return (
-    <div
-      ref={graphContainerRef}
-      className="mermaid"
-      style={{ width: "100%", height: "100%" }}
-    >
+    <div ref={graphRef} className="mermaid">
       {graphDefinition}
     </div>
   );
