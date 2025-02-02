@@ -22,49 +22,58 @@ function App() {
             data.name &&
             data.url &&
             data.authors &&
-            data.keywords &&
+            data.content &&
             data.publication_date &&
-            data.out_references !== undefined &&
+            data.coi &&
+            data.future_research &&
+            data.method_issues &&
             data.num_out !== undefined &&
-            data.in_references !== undefined &&
-            data.num_in !== undefined
+            data.out_references &&
+            data.summary
         );
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
 
         try {
-            const inputData = JSON.parse(inputText);
-
-            if (inputData.papers && Array.isArray(inputData.papers)) {
-                const invalidPapers = inputData.papers.filter(
-                    (paper) => !isValidCardData(paper)
-                );
-                if (invalidPapers.length > 0) {
-                    throw new Error('Some papers are missing required fields');
-                }
-                setCards([
-                    ...cards,
-                    ...inputData.papers.map((paper) => ({
-                        ...paper,
-                        isFavorite: false,
-                    })),
-                ]);
-            } else {
-                if (!isValidCardData(inputData)) {
-                    throw new Error('Invalid JSON structure. Missing required fields.');
-                }
-                setCards([
-                    ...cards,
-                    {
-                        ...inputData,
-                        isFavorite: false,
-                    },
-                ]);
+            const response = await fetch('https://8c59-2a0c-5bc0-40-3e29-d5b2-47af-124c-7e41.ngrok-free.app/get_graph', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: inputText }),
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            const responseData = await response.json();
+            const graphDatas = responseData.graph;
 
+           //  if (!isValidCardData(graphData)) {
+           //          throw new Error('Invalid JSON structure. Missing required fields.');
+           //      }
+            console.debug(graphDatas);
+            for (let graphDatax in graphDatas) {
+                let graphData = graphDatas[graphDatax];
+                console.debug(graphData);
+                const newCard = {
+                    name: graphData.name,
+                    url: graphData.url,
+                    authors: [graphData.authors],
+                    publication_date: graphData.publication_date,
+                    out_references: graphData.out_references,
+                    num_out: graphData.num_out,
+                    summary: graphData.summary,
+                    method_issues: graphData.method_issues,
+                    coi: graphData.coi,
+                    future_research: graphData.future_research,
+                };
+
+                setCards([...cards, newCard]);
+            }
             setInputText('');
         } catch (err) {
             setError('Invalid JSON format or missing required fields');
@@ -82,15 +91,15 @@ function App() {
             <h2>{card.name}</h2>
             <div className="detail-section">
             <label>Authors:</label>
-            <p>{card.authors.join(', ')}</p>
+            <p>{card.authors}</p>
             </div>
             <div className="detail-section">
             <label>Publication Date:</label>
             <p>{card.publication_date}</p>
             </div>
             <div className="detail-section">
-            <label>Keywords:</label>
-            <p>{card.keywords.join(', ')}</p>
+            <label>Summary:</label>
+            <p>{card.summary}</p>
             </div>
             <div className="detail-section">
             <label>URL:</label>
@@ -99,12 +108,12 @@ function App() {
             </a>
             </div>
             <div className="detail-section">
-            <label>Outgoing References ({card.num_out}):</label>
-            <p>{card.out_references.join(', ') || 'None'}</p>
+            <label>Methodological Issues:</label>
+            <p>{card.method_issues}</p>
             </div>
             <div className="detail-section">
-            <label>Incoming References ({card.num_in}):</label>
-            <p>{card.in_references.join(', ') || 'None'}</p>
+            <label>Outgoing References ({card.num_out}):</label>
+            <p>{card.out_references.join(', ') || 'None'}</p>
             </div>
             </div>
             </div>
@@ -157,8 +166,8 @@ function App() {
                         {card.isFavorite ? '⭐' : '☆'}
                         </button>
                         </div>
-                        <div className="card-authors">{card.authors.join(', ')}</div>
-                        <div className="card-keywords">{card.keywords.join(', ')}</div>
+                        <div className="card-authors">{card.authors}</div>
+                        {/*<div className="card-keywords">{card.keywords.join(', ')}</div>*/}
                         <div className="card-meta">
                         <span>📅 {card.publication_date}</span>
                         <span>🔗 {card.num_out} references</span>
@@ -177,7 +186,7 @@ function App() {
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Enter JSON data..."
+            placeholder="Enter prompt..."
             className="input-field"
             />
             <button type="submit" className="submit-button">
@@ -227,8 +236,8 @@ function App() {
                             {card.isFavorite ? '⭐' : '☆'}
                             </button>
                             </div>
-                            <div className="card-authors">{card.authors.join(', ')}</div>
-                            <div className="card-keywords">{card.keywords.join(', ')}</div>
+                            <div className="card-authors">{card.authors}</div>
+                            {/* <div className="card-content">{card.content.join(', ')}</div>*/}
                             <div className="card-meta">
                             <span>📅 {card.publication_date}</span>
                             <span>🔗 {card.num_out} references</span>
