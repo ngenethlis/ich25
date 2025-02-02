@@ -164,6 +164,8 @@ function App() {
                     publication_date: graphData.publication_date,
                     out_references: graphData.out_references,
                     num_out: graphData.num_out,
+                    in_references: graphData.in_references,
+                    num_in: graphData.num_in,
                     summary: graphData.summary,
                     method_issues: graphData.method_issues,
                     coi: graphData.coi,
