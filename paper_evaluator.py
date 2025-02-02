@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from anthropic import Anthropic
+from openai import OpenAI
 from typing import List, Dict, Any
 import re
 
 # For now, only claude-3-5-sonnet-20241022 supports PDFs
-MODEL_NAME = "claude-3-5-sonnet-20241022"
+# MODEL_NAME = "claude-3-5-sonnet-20241022"
+MODEL_NAME = "gpt-4o-mini"
 
 
 
@@ -26,7 +28,7 @@ class SearchResult:
 class PaperAnalyser:
     def __init__(self, model_name: str = MODEL_NAME):
         self.model_name = model_name
-        self.client = Anthropic()
+        self.client = OpenAI() #Anthropic()
 
         self.analyse_prompt = f"""
             Please do the following:
@@ -46,13 +48,13 @@ class PaperAnalyser:
                 ]
             }
         ]
-        response = self.client.messages.create(
+        response = self.client.chat.completions.create(
             max_tokens=500,
             temperature=0,
             model=self.model_name,
             messages=messages
         )
-        raw_text = " ".join(chunk.text for chunk in response.content)
+        raw_text = response.choices[0].message.content #" ".join(chunk.text for chunk in response.content)
 
         summary = self.extract_tag_content(raw_text, "summary")
         methodological_issues = self.extract_tag_content(
@@ -109,8 +111,7 @@ class PaperAnalyser:
                 eval_output = self.evaluate_gap_against_paper(gap, result)
                 print(f"\n--- IRIS Result #{idx} ---")
                 print(f"Title: {result.metadata.get('title', 'Unknown')}")
-                print(f"Summary: {result.metadata.get(
-                    'summary', 'No summary available')}")
+                print(f"Summary: {result.metadata.get('summary', 'No summary available')}")
                 print(f"Evaluation: {eval_output}")
 
     def evaluate_gap_against_paper(self, gap: str, search_result: SearchResult) -> str:

@@ -12,3 +12,5 @@ pymupdf
 streamlit
 chromadb
 arxiv
+flask
+flask-cors
