@@ -406,3 +406,11 @@ body {
     margin: 0;
   }
 }
+
+.graph_container {
+  height: 600px;
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 20px;
+}
