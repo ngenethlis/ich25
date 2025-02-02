@@ -1,9 +1,7 @@
 from dotenv import load_dotenv
 import os
 import anthropic
-
 load_dotenv()
-
 
 def generate_keywords_with_claude(topic):
     client = anthropic.Anthropic()
@@ -13,13 +11,17 @@ def generate_keywords_with_claude(topic):
         that a researcher would use to find scientific papers on arXiv 
         about this topic. 
         Return these keywords in a comma-separated list only."""
+    
 
     response = client.messages.create(
-        model="claude-3-5-haiku-20241022",
+        model="claude-3-5-haiku-20241022",  
         max_tokens=100,
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
     )
 
     keywords = response.content[0].text.split(",")
     keywords = [kw.strip() for kw in keywords]
     return keywords
+
