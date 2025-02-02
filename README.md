@@ -1,47 +1,31 @@
-# ich25
+# InCite
 
-Current ideas:
+## Inspiration
+- We saw its hard to find a thesis or research topic
+- Founders really struggle to come up with new ideas based on gaps in the market
+- It's difficult to visulise and understand how papers link together and the chain of events that lead to this paper in terms of its citations.
+- There is no 
+- With the recent developments in text encoders and LLMs we can leverage these new technologise to understand and interprate papers.
 
-# Overleaf Extension + Research assistant
-- Store papers in vectorDB
-- Node is paper, links are references to other papers
-- LLM job:
-    - finds relevant literature from variety of sources
-    - Suggests:
-        1. Points metioned in other papers than you haven't mentioned
-        2. Misquotes/ misuse of papers?
-        3. Reads your own paper + sources, what do those papers reference? what papers also reference that topic?
+## What it does
+- COI analysis
+- Critical Evaluation of reasearch methods and citations
+- Creates a CiteMap linking papers that reference one another together, making it easier to visulise and follow the chain of thought.
 
-- Goal:
-    - reference map / graph
-    - easier to research \/ do papers.
-    - chatbot using RAG to answer questions with well cited answers, can quote papers
+## How we built it
+- 
 
-- Reach Goals:
-    - ‘identifies gaps in the market’ simply by looking at the sketch/map and coming up with areas which are neglected 
+## Challenges we ran into
 
 
+## Accomplishments that we're proud of
 
 
+## What we learned
 
+## What's Next
 
-
-
-
-
-
-
-
-
-Anthropic: Use claude
-- Jury + RAG
-
-MW:
-- code path generator
-
-
-Story linking and analysis
-- Vector DB - intersystems
-- find out which article is about the same news story (scrape and use rss feeds, link news stories, and how we do it)
-- compile a list of rss fields
-- use react, display a timeline of events and then have that event blow up so that it shows left and right views using news cards -> click on the card to access the news story
+## Built With
+- React
+- InterSystems IRIS Vector DB
+- Anthropic Claude
