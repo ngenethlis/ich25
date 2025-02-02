@@ -1,4 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import ReactFlow, { Controls, Background, useReactFlow } from "reactflow";
+import "reactflow/dist/style.css";
+// import MermaidGraph from "./MermaidGraph"
+// import mermaid from "mermaid";
+
 import './App.css';
 
 function App() {
@@ -8,6 +13,10 @@ function App() {
     const [cards, setCards] = useState([]);
     const [error, setError] = useState('');
     const [selectedCard, setSelectedCard] = useState(null);
+    const [graph, setGraph] = useState({ nodes: [], edges: [] });
+    const [selectedNode, setSelectedNode] = useState(null);
+    const [backgroundGradient, setBackgroundGradient] = useState("");
+    const [graphDatas, setGraphDatas] = useState([]);
 
     const toggleFavorite = (cardName) => {
         setCards((prevCards) =>
@@ -15,6 +24,86 @@ function App() {
                 card.name === cardName ? { ...card, isFavorite: !card.isFavorite } : card
             )
         );
+    }; 
+ 
+ 
+    const processInputData = (data) => {
+        const inReferencesMap = new Map();
+        data.forEach((node) => {
+            node.out_references.forEach((ref) => {
+                if (!inReferencesMap.has(ref)) {
+                    inReferencesMap.set(ref, []);
+                }
+                inReferencesMap.get(ref).push(node.name);
+            });
+        });
+
+        const transformedData = data.map((node) => ({
+            name: node.name,
+            url: node.url,
+            authors: node.authors,
+            publication_date: node.publication_date,
+            out_references: node.out_references,
+            num_out: node.num_out,
+            in_references: inReferencesMap.get(node.name) || [],
+            num_in: inReferencesMap.get(node.name)?.length || 0,
+        }));
+        return transformedData;
+    };
+
+    const generateGraph = (data) => {
+        const sortedData = data.sort((a, b) => b.num_out - a.num_out);
+        const totalNodes = sortedData.length;
+        const radiusStep = 100 + 5 * totalNodes;
+        const nodes = sortedData.map((node, index) => {
+            const angle = (index/totalNodes) * 2 * Math.PI;
+            const radius = radiusStep * Math.min(index, 2);
+            const x = 300 + radius * Math.cos(angle);
+            const y = 200 + radius * Math.sin(angle);
+
+            return {
+                id: node.name,
+                data: { label: node.name },
+                position: { x, y },
+            };
+        });
+
+        const edges = data.flatMap((node) =>
+            node.out_references.map((ref) => ({
+                id: `${node.name}-${ref}`,
+                source: node.name,
+                target: ref,
+                animated: true,
+                markerEnd: { type: "arrowclosed" },
+            }))
+        );
+
+        return { nodes, edges };
+    };
+
+    const calculateNodeInfluence = (data) => {
+        const maxInReferences = Math.max(...data.map((node) => node.num_in));
+        return data.map((node) => ({
+            ...node,
+            influence: node.num_in / maxInReferences,
+        }));
+    };
+
+    const generateBackgroundGradient = (nodes) => {
+        let gradient = "radial-gradient(circle, ";
+            nodes.forEach((node) => {
+                if (node.position && node.position.x !== undefined && node.position.y !== undefined) {
+                    const { x, y } = node.position;
+                    const darkness = 100 - Math.floor(node.influence * 50);
+                    gradient += `rgba(0, 0, 0, ${node.influence * 0.3}) ${x}px ${y}px, `;
+                } else {
+                    console.error("Node missing position:", node);
+                }
+            });
+
+            gradient = gradient.slice(0, -2) + ")";
+        console.log("Final Gradient:", gradient);
+        return gradient;
     };
 
     const isValidCardData = (data) => {
@@ -38,7 +127,7 @@ function App() {
         setError('');
 
         try {
-            const response = await fetch('https://8c59-2a0c-5bc0-40-3e29-d5b2-47af-124c-7e41.ngrok-free.app/get_graph', {
+            const response = await fetch('https://legible-locust-innocent.ngrok-free.app/get_graph', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -51,6 +140,15 @@ function App() {
             }
             const responseData = await response.json();
             const graphDatas = responseData.graph;
+            setGraphDatas(graphDatas);
+
+         const processedData = processInputData(graphDatas);
+         const { nodes, edges } = generateGraph(processedData);
+         setGraph({ nodes, edges });
+         const nodesWithInfluence = calculateNodeInfluence(graphDatas);
+         const gradient = generateBackgroundGradient(nodesWithInfluence);
+         console.log("Generated Gradient:", gradient);
+         setBackgroundGradient(gradient);
 
            //  if (!isValidCardData(graphData)) {
            //          throw new Error('Invalid JSON structure. Missing required fields.');
@@ -81,6 +179,47 @@ function App() {
         }
     };
 
+    const NodeDetail = ({ node, onClose }) => {
+        if (!node) return null;
+        return (
+            <div className="node-detail-overlay" onClick={onClose}>
+            <div className="node-detail-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-button" onClick={onClose}>x</button>
+            <h2>{node.name}</h2>
+            <div className="detail-section">
+            <label>Authors:</label>
+            <p>{node.authors}</p>
+            </div>
+            <div className="detail-section">
+            <label>Publication Date:</label>
+            <p>{node.publication_date}</p>
+            </div>
+            <div className="detail-section">
+            <label>Summary:</label>
+            <p>{node.summary}</p>
+            </div>
+            <div className="detail-section">
+            <label>URL:</label>
+            <a href={node.url} target="_blank" rel="noopener noreferrer">
+            {node.url}
+            </a>
+            </div>
+            </div>
+            </div>
+        );
+    };
+
+     const handleNodeClick = (event, node) => {
+         const nodeData = graphDatas.find((item) => item.name === node.id);
+         setSelectedNode(nodeData);
+     };
+ 
+     const handleReferenceClick = (referenceName) => {
+         const referencedNode = graphDatas.find((item) => item.name === referenceName);
+         if (referencedNode) {
+             setSelectedNode(referencedNode);
+         }
+     };
     const CardDetail = ({ card, onClose }) => {
         return (
             <div className="card-detail-overlay" onClick={onClose}>
@@ -248,7 +387,17 @@ function App() {
                 ))}
                 </div>
             ) : (
-                <div className="graph-placeholder">Graph Display (Placeholder)</div>
+                <div className="graph-container">
+                <ReactFlow
+                nodes = {graph.nodes}
+                edges = {graph.edges}
+                onNodeClick={handleNodeClick}
+                fitView
+                >
+                <Background/>
+                <Controls/>
+                </ReactFlow>
+                </div>
             )}
             </>
         )}
@@ -256,6 +405,10 @@ function App() {
         {/* Card Detail Overlay */}
         {selectedCard && (
             <CardDetail card={selectedCard} onClose={() => setSelectedCard(null)} />
+        )}
+
+        {selectedNode && (
+            <NodeDetail node={selectedNode} onClose={() => setSelectedNode(null)} />
         )}
         </div>
     );
