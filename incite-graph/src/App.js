@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import ReactFlow, { Controls, useReactFlow } from "reactflow";
+import ReactFlow, { Controls, Background, useReactFlow } from "reactflow";
 import "reactflow/dist/style.css";
 import MermaidGraph from "./MermaidGraph"
 import mermaid from "mermaid";
@@ -173,56 +173,78 @@ const jsonData = [
   }
 
 ];
-// Function to generate Mermaid graph definition from JSON data
-const generateMermaidGraph = (data) => {
-  let mermaidDefinition = "graph TD;\n";
+const generateGraph = (data) => {
+  const sortedData = data.sort((a, b) => b.num_out - a.num_out);
+  const radiusStep = 150;
+  const totalNodes = sortedData.length;
 
-  data.forEach((node) => {
-    const sanitizedNodeName = node.name.replace(/[^a-zA-Z0-9]/g, "_"); // Sanitize node names
-    node.out_references.forEach((ref) => {
-      const sanitizedRef = ref.replace(/[^a-zA-Z0-9]/g, "_"); // Sanitize reference names
-      mermaidDefinition += `    ${sanitizedNodeName} --> ${sanitizedRef};\n`;
-    });
+  const nodes = sortedData.map((node, index) => {
+    const angle = (index / totalNodes) * 2 * Math.PI;
+    const radius = radiusStep * Math.min(index, 2);
+    const x = 300 + radius * Math.cos(angle);
+    const y = 200 + radius * Math.sin(angle);
+
+    return {
+      id: node.name,
+      data: { label: node.name },
+      position: { x, y },
+    };
   });
 
-  return mermaidDefinition;
-};
+  const edges = data.flatMap((node) =>
+    node.out_references.map((ref) => ({
+      id: `${node.name}-${ref}`,
+      source: node.name,
+      target: ref,
+      animated: true,
+      type: "simplebezier"
+    }))
+  );
 
+  return { nodes, edges };
+};
 const App = () => {
-  const [mermaidGraph, setMermaidGraph] = useState("");
+  const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [selectedNode, setSelectedNode] = useState(null);
 
   useEffect(() => {
-    const graphDefinition = generateMermaidGraph(jsonData);
-    setMermaidGraph(graphDefinition); // Set the generated graph definition
+    setGraph(generateGraph(jsonData));
   }, []);
 
   // Handle node clicks
-  const handleNodeClick = (nodeId) => {
-    const nodeData = jsonData.find((node) => node.name.replace(/[^a-zA-Z0-9]/g, "_") === nodeId);
+  const handleNodeClick = (event, node) => {
+    const nodeData = jsonData.find((item) => item.name === node.id);
     setSelectedNode(nodeData); // Update state with the clicked node's data
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh" }}>
-      <h1 style={{ textAlign: "center" }}>Mermaid Diagram</h1>
-      <div style={{ flex: 1, overflow: "auto" }}>
-        <MermaidGraph graphDefinition={mermaidGraph} onNodeClick={handleNodeClick} />
+    <div style={{ display: "flex", height: "100vh", flexDirection: "row" }}>
+      {/* React Flow container */}
+      <div style={{ flex: 1, position: "relative" }}>
+        <h1 style={{ textAlign: "center" }}>Interactive Graph</h1>
+        <ReactFlow
+          nodes={graph.nodes}
+          edges={graph.edges}
+          onNodeClick={handleNodeClick} // Attach click handler
+        >
+          <Controls position="top-left" /> {/* Add controls */}
+          <Background color="cdc" gap={16} /> {/* Add a background */}
+        </ReactFlow>
       </div>
 
-      {/* Display selected node data */}
+      {/* Sidebar to display the selected node's data */}
       {selectedNode && (
         <div
           style={{
-            position: "fixed",
-            right: 0,
-            top: 0,
             width: "30%",
-            height: "100%",
             backgroundColor: "#f4f4f4",
             padding: "20px",
-            boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
+            position: "absolute",
+            right: 0,
+            top: 0,
+            height: "100%",
             overflowY: "auto",
+            boxShadow: "-2px 0 5px rgba(0, 0, 0, 0.1)",
           }}
         >
           <h2>Node Details</h2>
