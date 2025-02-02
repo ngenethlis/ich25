@@ -84,7 +84,7 @@ async def get_graph():
 
 def apply_in_refs(papers):
     # Step 1: Create a mapping from paper URLs to their indices
-    url_to_index = {paper['url']: i for i, paper in enumerate(papers)}
+    name_to_index = {paper['name']: i for i, paper in enumerate(papers)}
     
     # Initialize in_refs for each paper
     for paper in papers:
@@ -94,9 +94,9 @@ def apply_in_refs(papers):
     # Step 2: Iterate through the list of papers
     for paper in papers:
         for out_ref in paper['out_references']:
-            if out_ref in url_to_index:
-                referenced_paper_index = url_to_index[out_ref]
-                papers[referenced_paper_index]['in_refs'].append(paper['url'])
+            if out_ref in name_to_index:
+                referenced_paper_index = name_to_index[out_ref]
+                papers[referenced_paper_index]['in_refs'].append(paper['name'])
                 papers[referenced_paper_index]['num_in'] += 1
     
     return papers

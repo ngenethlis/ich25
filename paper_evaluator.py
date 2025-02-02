@@ -4,9 +4,7 @@ from openai import OpenAI
 from typing import List, Dict, Any
 import re
 
-# For now, only claude-3-5-sonnet-20241022 supports PDFs
-# MODEL_NAME = "claude-3-5-sonnet-20241022"
-MODEL_NAME = "gpt-4o-mini"
+MODEL_NAME = "claude-3-5-sonnet-20241022"
 
 
 @dataclass
@@ -28,7 +26,7 @@ class SearchResult:
 class PaperAnalyser:
     def __init__(self, model_name: str = MODEL_NAME):
         self.model_name = model_name
-        self.client = OpenAI()  # Anthropic()
+        self.client = Anthropic()
 
         self.analyse_prompt = f"""
             Please do the following:
@@ -46,12 +44,10 @@ class PaperAnalyser:
                 "content": [{"type": "text", "text": self.analyse_prompt + text}],
             }
         ]
-        response = self.client.chat.completions.create(
+        response = self.client.messages.create(
             max_tokens=500, temperature=0, model=self.model_name, messages=messages
         )
-        raw_text = response.choices[
-            0
-        ].message.content  # " ".join(chunk.text for chunk in response.content)
+        raw_text = response.content[0].text  # " ".join(chunk.text for chunk in response.content)
 
         summary = self.extract_tag_content(raw_text, "summary")
         methodological_issues = self.extract_tag_content(

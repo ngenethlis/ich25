@@ -3,7 +3,7 @@ import io
 import requests
 import json
 from langchain_community.retrievers import ArxivRetriever
-from openai import OpenAI
+from anthropic import Anthropic 
 from io import BytesIO
 from pdfminer.high_level import extract_text
 from concurrent.futures import ProcessPoolExecutor
@@ -11,7 +11,10 @@ from concurrent.futures import ProcessPoolExecutor
 def format_paper(paper):
     info = paper.metadata
     arxiv_id = info["entry_id"].split("/")[-1].split("v")[0]
-    references = get_references(arxiv_id)
+    try:
+        references = get_references(arxiv_id)
+    except:
+        references = []
     paper_information = {
         "name": info["Title"],
         "url": info["entry_id"],
@@ -77,23 +80,23 @@ def extract_text_from_pdf_bytes(pdf_bytes):
 
 
 def extract_references_from_claude(text):
-    client = OpenAI()
+    client = Anthropic()
 
     prompt = f"""
         Extract the titles of papers referenced by the given text. You must give the titles in a list seperated by newlines. Your response must be inside <titles> tags.
         Here is the text: {text}
     """
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",#"claude-3-5-haiku-20241022",  
+    response = client.messages.create(
+        model="claude-3-5-haiku-20241022",  
         max_tokens=6024,
         messages=[
             {"role": "user", "content": prompt},
             {"role": "assistant", "content":"[{"}
         ]
-    )
+    ).content[0].text
 
-    documents = extract_tag_content(response.choices[0].message.content, "titles").split("\n")
+    documents = extract_tag_content(response, "titles").split("\n")
     return documents
 
 def cleanse_references(references):
