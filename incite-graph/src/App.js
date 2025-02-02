@@ -173,6 +173,7 @@ const jsonData = [
   }
 
 ];
+// Convert JSON to React Flow nodes & edges
 const generateGraph = (data) => {
   const sortedData = data.sort((a, b) => b.num_out - a.num_out);
   const radiusStep = 150;
@@ -187,7 +188,7 @@ const generateGraph = (data) => {
     return {
       id: node.name,
       data: { label: node.name },
-      position: { x, y },
+      position: { x, y }, // Ensure position is defined
     };
   });
 
@@ -197,18 +198,51 @@ const generateGraph = (data) => {
       source: node.name,
       target: ref,
       animated: true,
-      type: "simplebezier"
+      markerEnd: { type: "arrowclosed" }, // Add arrowhead to the edge
     }))
   );
 
   return { nodes, edges };
+};// Calculate node influence based on incoming references
+const calculateNodeInfluence = (data) => {
+  const maxInReferences = Math.max(...data.map((node) => node.num_in));
+  return data.map((node) => ({
+    ...node,
+    influence: node.num_in / maxInReferences, // Normalize influence to [0, 1]
+  }));
 };
+
+// Generate CSS gradient based on node positions and influence
+const generateBackgroundGradient = (nodes) => {
+  let gradient = "radial-gradient(circle, ";
+
+  nodes.forEach((node) => {
+    if (node.position && node.position.x !== undefined && node.position.y !== undefined) {
+      const { x, y } = node.position;
+      const darkness = 100 - Math.floor(node.influence * 50); // Darker for higher influence
+      gradient += `rgba(0, 0, 0, ${node.influence * 0.3}) ${x}px ${y}px, `;
+    } else {
+      console.error("Node missing position:", node);
+    }
+  });
+
+  gradient = gradient.slice(0, -2) + ")"; // Remove trailing comma and close gradient
+  return gradient;
+};
+
 const App = () => {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
   const [selectedNode, setSelectedNode] = useState(null);
+  const [backgroundGradient, setBackgroundGradient] = useState("");
 
   useEffect(() => {
-    setGraph(generateGraph(jsonData));
+    const { nodes, edges } = generateGraph(jsonData);
+    setGraph({ nodes, edges });
+
+    // Calculate node influence and generate background gradient
+    const nodesWithInfluence = calculateNodeInfluence(jsonData);
+    const gradient = generateBackgroundGradient(nodesWithInfluence);
+    setBackgroundGradient(gradient);
   }, []);
 
   // Handle node clicks
@@ -220,7 +254,13 @@ const App = () => {
   return (
     <div style={{ display: "flex", height: "100vh", flexDirection: "row" }}>
       {/* React Flow container */}
-      <div style={{ flex: 1, position: "relative" }}>
+      <div
+        style={{
+          flex: 1,
+          position: "relative",
+          background: backgroundGradient, // Apply dynamic gradient
+        }}
+      >
         <h1 style={{ textAlign: "center" }}>Interactive Graph</h1>
         <ReactFlow
           nodes={graph.nodes}
@@ -228,7 +268,7 @@ const App = () => {
           onNodeClick={handleNodeClick} // Attach click handler
         >
           <Controls position="top-left" /> {/* Add controls */}
-          <Background color="cdc" gap={16} /> {/* Add a background */}
+          <Background /> {/* Add a background */}
         </ReactFlow>
       </div>
 
