@@ -4,6 +4,7 @@ from typing import Dict, Any
 from paper_evaluator import PaperAnalyser, AnalysisResponse
 from data_retrieval.retrieve_arxiv_papers import get_papers
 from data_retrieval.generate_claude_keywords import generate_keywords_with_claude
+from pprint import pprint
 from vector_db.InCiteOOP import InCiteIRISDatabase
 import asyncio
 from concurrent.futures import ProcessPoolExecutor
@@ -54,13 +55,14 @@ async def get_graph():
             paper['coi'] = analysis.conflict_of_interest
             paper['future_research'] = analysis.future_research
             return paper
-        
+
         # Use ProcessPoolExecutor for CPU-intensive tasks
         with ProcessPoolExecutor() as executor:
             # Create a partial function with the paper_analyser instance
             papers = list(executor.map(analyze_paper, papers))
         for paper in papers:
             vector_db.insert_article_json(paper)
+        papers = apply_in_refs(papers)
         print(papers)
     else:
         print("Cache Hit")
@@ -79,6 +81,27 @@ async def get_graph():
         return jsonify(result)
     except Exception as e:
         raise APIError(f'Error generating graph: {str(e)}')
+
+def apply_in_refs(papers):
+    # Step 1: Create a mapping from paper URLs to their indices
+    url_to_index = {paper['url']: i for i, paper in enumerate(papers)}
+    
+    # Initialize in_refs for each paper
+    for paper in papers:
+        paper['in_refs'] = []
+        paper['num_in'] = 0
+    
+    # Step 2: Iterate through the list of papers
+    for paper in papers:
+        for out_ref in paper['out_references']:
+            if out_ref in url_to_index:
+                referenced_paper_index = url_to_index[out_ref]
+                papers[referenced_paper_index]['in_refs'].append(paper['url'])
+                papers[referenced_paper_index]['num_in'] += 1
+    
+    return papers
+
+
 
 @app.route('/get_paper', methods=['POST'])
 def get_paper():
@@ -106,6 +129,3 @@ def get_paper():
         return jsonify(result)
     except Exception as e:
         raise APIError(f'Error retrieving paper: {str(e)}')
-
-if __name__ == '__main__':
-    app.run(debug=True)
