@@ -254,6 +254,14 @@ const App = () => {
     setSelectedNode(nodeData); // Update state with the clicked node's data
   };
 
+
+  const handleReferenceClick = (referenceName) => {
+    const referencedNode = jsonData.find((item) => item.name === referenceName);
+    if (referencedNode) {
+      setSelectedNode(referencedNode); // Update state with the referenced node's data
+    }
+  };
+
   return (
     <div style={{ display: "flex", height: "100vh", flexDirection: "row" }}>
       {/* React Flow container */}
@@ -295,8 +303,60 @@ const App = () => {
             <p><strong>Keywords:</strong> {selectedNode.keywords.join(", ")}</p>
             <p><strong>Publication Date:</strong> {selectedNode.publication_date}</p>
             <p><strong>URL:</strong> <a href={selectedNode.url} target="_blank" rel="noopener noreferrer">{selectedNode.url}</a></p>
-            <p><strong>Out References:</strong> {selectedNode.out_references.join(", ") || "None"}</p>
-            <p><strong>In References:</strong> {selectedNode.in_references.join(", ") || "None"}</p>
+
+
+
+            {/* Out References */}
+            <p>
+              <strong>References:</strong>
+              {selectedNode.out_references.length > 0 ? (
+                selectedNode.out_references.map((ref) => (
+                  <button
+                    key={ref}
+                    onClick={() => handleReferenceClick(ref)}
+                    style={{
+                      margin: "2px",
+                      padding: "4px 8px",
+                      background: "#007bff",
+                      border: "none",
+                      color: "white",
+                      cursor: "pointer",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {ref}
+                  </button>
+                ))
+              ) : (
+                " None"
+              )}
+            </p>
+
+            {/* In References */}
+            <p>
+              <strong>Referenced by:</strong>
+              {selectedNode.in_references.length > 0 ? (
+                selectedNode.in_references.map((ref) => (
+                  <button
+                    key={ref}
+                    onClick={() => handleReferenceClick(ref)}
+                    style={{
+                      margin: "2px",
+                      padding: "4px 8px",
+                      background: "#28a745",
+                      border: "none",
+                      color: "white",
+                      cursor: "pointer",
+                      borderRadius: "4px",
+                    }}
+                  >
+                    {ref}
+                  </button>
+                ))
+              ) : (
+                " None"
+              )}
+            </p>
           </div>
           <button
             onClick={() => setSelectedNode(null)}
